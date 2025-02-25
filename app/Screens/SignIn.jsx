@@ -3,15 +3,36 @@ import colors from '../config/colors'
 import { useEffect, useState } from 'react'
 import { UserContext } from "../Contexts/userContext";
 import { useContext } from "react";
+import Loading from '../Components/Loading';
+import { ActivityIndicator } from 'react-native';
 
 function SignIn({navigation: navigate}) {
-   
+    const [isLoading, setIsLoading] = useState(false)
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [emailError, setEmailError] = useState(false)
     const {user,setUser} = useContext(UserContext)
 
     function handleLogin (email, password) {
+        setIsLoading(true)
+        if (!email || !password) {
+            Alert.alert(
+                "Error !",
+                "Please fill in all fields",
+                [
+                  {
+                    text: "OK",
+                    onPress: () => {
+                        navigate.navigate("SignIn")
+                        setIsLoading(false)
+                    },
+                  },
+                ],
+                { cancelable: false }
+              );  
+            return
+        }
+        
         fetch(`https://mobileimsbackend.onrender.com/user/${email}`,{
             method: 'GET'
         })
@@ -19,28 +40,21 @@ function SignIn({navigation: navigate}) {
         .then(data => {
             
             if (data.message) {
+                setIsLoading(false)
                 setEmailError(true)
             }
             else {
                 if (data.user.password!== undefined && data.user.password == password) {
                     setUser(data.user)
-                  
-                    Alert.alert(
-                        "Success!",
-                        "Login successful \n\n Welcome",
-                        [
-                          {
-                            text: "OK",
-                            onPress: () => {
-                                navigate.navigate("Home")
-                        }}]
-                    )
+                    setIsLoading(false)
+                    navigate.navigate("Home")
                     
                 }
                 else {
-                    
+                    setIsLoading(false),
                     Alert.alert(
-                        "Error",
+                       
+                        "Error !",
                         "Invalid password!",
                         [
                           {
@@ -51,15 +65,16 @@ function SignIn({navigation: navigate}) {
                           },
                         ],
                         { cancelable: false }
-                      );  
+                    );  
                 }
             } 
         })
     }
     useEffect(() => {
         if (emailError) {
+            setIsLoading(false),
             Alert.alert(
-                "Error",
+                "Error !",
                 "Invalid email address!",
                 [
                   {
@@ -83,7 +98,7 @@ function SignIn({navigation: navigate}) {
                 <Text style={styles.welcomeText}>Welcome to Moringa School IMS ! </Text>
             </View>
             <View style={styles.formContainer}>
-            <View style={{ flexDirection: 'column', alignItems: 'center', marginTop: 20, gap: 20, backgroundColor: colors.white}}>
+            <View style={{ flexDirection: 'column', alignItems: 'center', marginTop: 20, gap: 20, backgroundColor: colors.darkerShadeOfWhite}}>
                 <Text style={{
                   width: '100%',
                   fontSize: 21,
@@ -120,11 +135,14 @@ function SignIn({navigation: navigate}) {
             <View style={{width: "70%", alignSelf: "center", marginTop: 40}} >
             <Button
             style={styles.button}
-            title='Sign In'
+            title={isLoading ? "loading ..." : "Sign In"}
             titleStyle={styles.buttonText}
-            mode="contained"
+           
             color={colors.orange}
-            onPress={() => handleLogin(email, password)}
+            onPress={() => {
+                setIsLoading(true)
+                handleLogin(email, password)
+            }}
           >
             
           </Button>         
@@ -176,21 +194,24 @@ const styles = StyleSheet.create({
     formContainer: {
       width: '100%',
       height: height - 190,
-      backgroundColor: colors.white,
+      backgroundColor: colors.darkerShadeOfWhite,
       borderTopLeftRadius: 20,
       borderTopRightRadius: 20,
       alignItems: 'center',
       justifyContent: 'flex-start',
       paddingTop: 0,
       padding: 20,
+      opacity: 0.99
     },
     formField: {
       width: width - 100,
-      backgroundColor: colors.darkerShadeOfWhite,
+      backgroundColor:  `rgba(7, 1, 58, 0.2)`,
       height: 35,
       paddingLeft: 25,
       color: colors.black,
       marginBottom: 0,
+      
+      
     },
     label: {
       marginBottom: 5,
