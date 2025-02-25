@@ -1,20 +1,65 @@
 import { View, Text, StyleSheet,Platform,StatusBar, TextInput, Button } from "react-native";
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import colors from "../config/colors";
-
+import { UserContext } from "../Contexts/userContext";
+import { useContext, useEffect, useState } from "react";
+import { text } from "@fortawesome/fontawesome-svg-core";
+import { Alert } from 'react-native';
 function Profile({navigation}){
-   
+   const {setUser,user} = useContext(UserContext)
+   const [name, setName] = useState(user.username)
+   const [email, setEmail] = useState(user.email)
+   const [contact, setContact] = useState(user.phone_number)
+   const [password, setPassword] = useState(user.password)
+   const [profileName, setProfileName] = useState(user.username)
+   function handleEdit(){
+    const userData = {
+        username: name,
+        email: email,
+        phone_number: contact,
+        password: password
+      };
+      
+    fetch(`https://mobileimsbackend.onrender.com/edituser/${email}`,{
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(userData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message) {
+            Alert.alert(data.message)
+        }
+        else {
+            setName(name)
+            setEmail(email)
+            setContact(contact)
+            setPassword(password)
+            setProfileName(name)
+            setUser(data.user)
+            Alert.alert("Profile edited successfully")
+        }
+        
+    })
+   }
+   useEffect(() => {
+    setProfileName(name)
+   },[name])
     return(
         <View style={styles.container}>
             <Icon onPress={()=>{navigation.goBack()}} style={styles.back} name="arrow-back" size={27} color={colors.white} />
             <View style={styles.profile}>           
               <Text style={{color: colors.white, fontSize: 20, fontWeight: '900', marginBottom: 10}} >My Profile</Text>
               <Icon name="perm-identity" size={70} color={colors.white} />
-              <Text style={{color: colors.white, fontSize: 14, fontWeight: '500'}} >Hosea Karanja</Text>
+              <Text style={{color: colors.white, fontSize: 14, fontWeight: '500'}} >{profileName}</Text>
             </View>
             <View style={{marginHorizontal: 15, marginTop: 20}}>
                 <Text style={styles.label} >Name</Text>
                 <TextInput
+                onChange={(event) => setName(event.nativeEvent.text)}
+                value={user ? name : ''}
                 style={styles.input}
                 placeholder="Name"
                 
@@ -23,6 +68,8 @@ function Profile({navigation}){
                 </TextInput>
                 <Text style={styles.label} >Email</Text>
                 <TextInput
+                
+                value={user? email : ''}
                 style={styles.input}
                 placeholder="Email"
 
@@ -31,6 +78,8 @@ function Profile({navigation}){
                 </TextInput>
                 <Text style={styles.label} >Contact</Text>
                 <TextInput
+                onChange={(event) => setContact(event.nativeEvent.text)}
+                value={user? contact : ''}
                 style={styles.input}
                 placeholder="Phone Number"
                 >
@@ -38,14 +87,17 @@ function Profile({navigation}){
                 </TextInput>
                 <Text style={styles.label} >Passsword</Text>
                 <TextInput
+                onChange={(event) => setPassword(event.nativeEvent.text)}
+                value={user? password : ''}
                 style={[styles.input, {marginBottom: 60}]}
                 placeholder="password"
                 >
                     
                 </TextInput>  
-                <Text style={{position: 'absolute', right: 5, top: 270,color: colors.orange, fontSize: 16, fontWeight: '600'}} >Change Password?</Text>              
+                           
                 <View style={{gap: 20}}>
                 <Button 
+                onPress={() =>handleEdit()}
                 title="Edit details"
                 color={colors.blue}
                 

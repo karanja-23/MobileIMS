@@ -1,13 +1,17 @@
 import { View, Text, StyleSheet,Image,TouchableWithoutFeedback } from "react-native"
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import colors from "../config/colors"
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { UserContext } from "../Contexts/userContext";
 import { useNavigation } from "@react-navigation/native";
 
 function Header (){
     const navigation = useNavigation()
     const {user} = useContext(UserContext)
+    const [username, setUsername] = useState(user.username)
+    useEffect(() => {
+        setUsername(user.username)
+    }, [user])
     return(
         <View style={{flex: 1}}>
             <View style={styles.header}>
@@ -19,7 +23,7 @@ function Header (){
                 <TouchableWithoutFeedback onPress={() => navigation.navigate('Profile')}>
                 <View style={styles.user}>
                     <Icon name="perm-identity" size={29} color={colors.white} />                
-                    <Text style={{color: colors.white, fontSize: 13, fontWeight: '600'}}> Hi {user.username}.</Text>
+                    <Text style={{color: colors.white, fontSize: 13, fontWeight: '600'}}> Hi {username}.</Text>
                 </View>            
                 </TouchableWithoutFeedback>
             </View>        
