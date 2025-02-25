@@ -3,8 +3,9 @@ import colors from '../config/colors'
 import { useEffect, useState } from 'react'
 import { UserContext } from "../Contexts/userContext";
 import { useContext } from "react";
+
 function SignIn({navigation: navigate}) {
-    const width = Dimensions.get('window').width
+   
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [emailError, setEmailError] = useState(false)
@@ -78,28 +79,27 @@ function SignIn({navigation: navigate}) {
     return (
         <View style={styles.container}>
             <View style={styles.imageContainer}>
-                <Image style={{
-                    width: '100%',
-                    resizeMode: 'contain'
-                }} source={require('../assets/logo.png')} />
+                <Image style={styles.logo} source={require('../assets/darkLogo.png')} />
+                <Text style={styles.welcomeText}>Welcome to Moringa School IMS ! </Text>
             </View>
-            <View style={{ flexDirection: 'column', alignItems: 'center', marginTop: 20, gap: 20}}>
-                <Text style={{ width: '100%',fontSize: 20,fontWeight: 'bold',color: colors.blue}}>Sign in to your account </Text>
+            <View style={styles.formContainer}>
+            <View style={{ flexDirection: 'column', alignItems: 'center', marginTop: 20, gap: 20, backgroundColor: colors.white}}>
+                <Text style={{
+                  width: '100%',
+                  fontSize: 21,
+                  fontWeight: 'bold',
+                  color: colors.blue,
+                  textAlign: 'center',
+                  marginBottom: 10,
+                  
+                }}>Sign in to your account</Text>
                 <View>
                 <Text style={styles.label}>Email</Text>
                 <TextInput
                 placeholder='john doe@gmail.com'
                 value={email}
                 onChangeText={(text) => setEmail(text)}
-                style={{
-                    width: width - 100,                    
-                    borderRadius: 10,
-                    backgroundColor: colors.darkerShadeOfWhite,
-                    height: 35,
-                    paddingLeft: 10,
-                    
-                    color: colors.black
-                }}
+                style={styles.formField}
                 >
 
                 </TextInput>                
@@ -110,56 +110,106 @@ function SignIn({navigation: navigate}) {
                 placeholder='enter your password ...'
                 value={password}
                 onChangeText={(text) => setPassword(text)}
-                style={{
-                    width: width - 100,                    
-                    borderRadius: 10,
-                    backgroundColor: colors.darkerShadeOfWhite,
-                    height: 35,
-                    paddingLeft: 10,
-                    
-                    color: colors.black
-                }}
+                style={styles.formField}
                 >
 
                 </TextInput>                
                 </View>  
              
-            </View>
+            </View>  
             <View style={{width: "70%", alignSelf: "center", marginTop: 40}} >
             <Button
-            title="Sign in"
+            style={styles.button}
+            title='Sign In'
+            titleStyle={styles.buttonText}
+            mode="contained"
             color={colors.orange}
             onPress={() => handleLogin(email, password)}
           >
+            
           </Button>         
-          </View> 
+          </View>          
+            </View>   
+ 
           
             
         </View>
     )
 }
+const height = Dimensions.get('window').height
+const width = Dimensions.get('window').width
 const styles = StyleSheet.create({
     container: {
       marginTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
       flex: 1,
       flexDirection: 'column',
-      backgroundColor: colors.white,
+      backgroundColor: colors.blue,
       alignItems: 'center',
-      
+      justifyContent: 'flex-start',
+      padding: 20,
     },
-    imageContainer :{
-        marginTop: 30,
-      width: '70%',
-      height: "20%",
+    imageContainer: {
+      flexDirection: 'column',
+      width: '100%',
+      height: 160,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: colors.white
+      backgroundColor: colors.blue,
+      gap: 10,
+      paddingBottom: 20
     },
-    label:{
-        marginBottom: 5,
-        fontSize: 15,
-        fontWeight: 'bold',
-        color: colors.blue
-    }
-})
+    logo: {
+      width: '70%',
+      height: 100,
+      resizeMode: 'contain',
+    },
+    welcomeText: {
+      width: '80%',
+      fontSize: 20,
+      fontWeight: 'bold',
+      color: colors.white,
+      textAlign: 'center',
+      textShadowColor: colors.grey,
+      textShadowRadius: 2,
+      textShadowOffset: { width: 1, height: 1 },
+    },
+    formContainer: {
+      width: '100%',
+      height: height - 190,
+      backgroundColor: colors.white,
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20,
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+      paddingTop: 0,
+      padding: 20,
+    },
+    formField: {
+      width: width - 100,
+      backgroundColor: colors.darkerShadeOfWhite,
+      height: 35,
+      paddingLeft: 25,
+      color: colors.black,
+      marginBottom: 0,
+    },
+    label: {
+      marginBottom: 5,
+      fontSize: 15,
+      fontWeight: 'bold',
+      color: '#716B6B',
+      marginLeft: 2,
+    },
+    button: {
+      width: '70%',
+      height: 40,
+      backgroundColor: colors.orange,
+      borderRadius: 10,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    buttonText: {
+      fontSize: 18,
+      color: colors.white,
+    },
+  });
 export default SignIn
