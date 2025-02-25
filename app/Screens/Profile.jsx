@@ -2,17 +2,18 @@ import { View, Text, StyleSheet,Platform,StatusBar, TextInput, Button } from "re
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import colors from "../config/colors";
 import { UserContext } from "../Contexts/userContext";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useRef } from "react";
 import { text } from "@fortawesome/fontawesome-svg-core";
 import { Alert } from 'react-native';
 function Profile({navigation}){
+    const userRef = useRef(null);
    const {setUser,user} = useContext(UserContext)
    const [name, setName] = useState(user.username)
    const [email, setEmail] = useState(user.email)
    const [contact, setContact] = useState(user.phone_number)
    const [password, setPassword] = useState(user.password)
    const [profileName, setProfileName] = useState(user.username)
-   function handleEdit(){
+   async function handleEdit(){
     const userData = {
         username: name,
         email: email,
@@ -20,7 +21,7 @@ function Profile({navigation}){
         password: password
       };
       
-    fetch(`https://mobileimsbackend.onrender.com/edituser/${email}`,{
+     await fetch(`https://mobileimsbackend.onrender.com/edituser/${email}`,{
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json'
@@ -29,24 +30,40 @@ function Profile({navigation}){
     })
     .then(response => response.json())
     .then(data => {
-        if (data.message) {
-            Alert.alert(data.message)
+        if (data.message === "Email address not found") {
+            Alert.alert(
+                "Error!",
+                "Email address not found",
+                [
+                    {
+                        text: "OK",
+                        onPress: () => navigation.navigate("Profile")
+                    }
+                ]
+            )
         }
-        else {
-            setName(name)
-            setEmail(email)
-            setContact(contact)
-            setPassword(password)
-            setProfileName(name)
-            setUser(data.user)
+        else if (data.message === 'User updated successfully') { 
+            
             Alert.alert("Profile edited successfully")
+            setTimeout(() => {
+                fetch(`https://mobileimsbackend.onrender.com/user/${email}`,{
+                    method: 'GET'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    setUser(data.user)
+                    
+                })
+            },1000)
+            
         }
         
     })
    }
    useEffect(() => {
-    setProfileName(name)
-   },[name])
+    
+    setProfileName(user.username)
+   },[user])
     return(
         <View style={styles.container}>
             <Icon onPress={()=>{navigation.goBack()}} style={styles.back} name="arrow-back" size={27} color={colors.white} />
