@@ -1,9 +1,10 @@
-import { View, Text, StyleSheet,Image,TouchableWithoutFeedback } from "react-native"
+import { View, Text, StyleSheet,Image,TouchableWithoutFeedback, Dimensions } from "react-native"
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import colors from "../config/colors"
 import { useContext, useEffect, useState } from "react";
 import { UserContext } from "../Contexts/userContext";
 import { useNavigation } from "@react-navigation/native";
+import { height } from "@fortawesome/free-brands-svg-icons/fa42Group";
 
 function Header (){
     const navigation = useNavigation()
@@ -30,10 +31,11 @@ function Header (){
         </View>
     )
 }
+const deviceHeight = Dimensions.get('window').height
 const styles = StyleSheet.create({
     header: {
         backgroundColor: colors.blue,
-        height: 80,
+        height: deviceHeight * 0.113,
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',

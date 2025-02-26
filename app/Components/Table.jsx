@@ -1,5 +1,5 @@
-import { DataTable,Searchbar } from "react-native-paper"
-import { View,StyleSheet,TouchableOpacity, Text } from "react-native"
+import { DataTable,Searchbar, } from "react-native-paper"
+import { View,StyleSheet,TouchableOpacity, Text, Dimensions } from "react-native"
 import { useState, useEffect } from "react";
 import colors from "../config/colors"
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -47,7 +47,7 @@ function Table(){
             placeholder="Search"
             inputStyle={{fontSize: 14, alignSelf: 'center'}}
             iconColor={colors.orange}
-            icon={()=> <Icon name="search" color={colors.orange} size={17} />}
+            icon={()=> <Icon name="search" color={colors.orange} size={20} />}
             iconSize={0}          
             style={Styles.search}
             value={query}
@@ -96,10 +96,12 @@ function Table(){
         </View>
     )
 }
+const width = Dimensions.get('window').width
+const height =Dimensions.get('window').height
 const Styles = StyleSheet.create({
     search :{
-        width: '46%',
-        height: 30,
+        width: '60%',
+        height: height* 0.045,
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: colors.darkerShadeOfWhite,        
