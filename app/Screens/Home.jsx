@@ -6,7 +6,8 @@ import Table from "../Components/Table";
 import { useState } from "react";
 function Home ({navigation}){
     const [isLoading, setIsLoading] = useState(true);
-    
+    const width = Dimensions.get('window').width
+    const height = Dimensions.get('window').height
     return(
         <View style={styles.container}>
             <Header />
@@ -17,13 +18,15 @@ function Home ({navigation}){
             style={styles.prompt}
             
             >
-                <Icon name="qr-code" size={29} color={colors.blue} />         
-                <Text style={{color: colors.blue, fontSize: 13, fontWeight: 'bold'}}>Scan QR Code/Bar code</Text>    
-                <Icon name="arrow-forward-ios" style={{marginLeft: '5%', fontWeight:"900"}} size={15} color={colors.blue} />
+                <View style={{flexDirection:'row', alignItems:'center', gap:width*0.007}}>
+                <Icon name="qr-code" size={27} color={colors.blue} />         
+                <Text style={{color: colors.blue, fontSize: 13, fontWeight: 'bold'}}>Scan QR Code/Bar code</Text>            
+                </View>    
+                <Icon name="arrow-forward-ios" style={{ fontWeight:"900"}} size={15} color={colors.blue} />
             </View>            
             </TouchableWithoutFeedback>
-            <View style={{marginTop: 50}}>
-                <Text style={{color: colors.blue, fontSize: 20, fontWeight: 'bold', marginLeft: 20, marginBottom: 20}}>Scan history</Text>
+            <View style={{marginTop: height * 0.06}}>
+                <Text style={{color: colors.blue, fontSize: 20, fontWeight: 'bold', marginLeft: width * 0.06, marginBottom: height * 0.03}}>Scan history</Text>
                 <Table />
             <View>
 
@@ -40,18 +43,19 @@ const styles = StyleSheet.create({
         
     },
     prompt: {
-        marginTop: 120,
+        marginTop: height * 0.16,
         marginLeft: '30%',
-        paddingLeft: 20,
+        paddingLeft: 10,
+        paddingRight: 30,
         backgroundColor: colors.white,
         borderWidth: 1,
         borderColor: colors.blue,
         justifyContent: 'left',
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 10,
-        width: width - 120,
-        height: 45,
+        gap: width * 0.03,
+        width: (width * 0.6),
+        height: height * 0.053,
         borderRadius: 10
     }
 })

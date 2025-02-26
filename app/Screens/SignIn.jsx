@@ -6,6 +6,8 @@ import { UserContext } from "../Contexts/userContext";
 import { useContext } from "react";
 import Loading from '../Components/Loading';
 import { ActivityIndicator } from 'react-native';
+import * as SecureStore from 'expo-secure-store';
+
 
 function SignIn({ navigation: navigate }) {
   const [isLoading, setIsLoading] = useState(false)
@@ -33,6 +35,93 @@ function SignIn({ navigation: navigate }) {
         { cancelable: false }
       );
       return
+
+function SignIn({navigation: navigate}) {
+    const [isLoading, setIsLoading] = useState(false)
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
+    const [emailError, setEmailError] = useState(false)
+    const {user,setUser} = useContext(UserContext)
+    const [passwordError, setPasswordError] = useState(false)
+    const {Token, setToken} = useContext(UserContext)
+
+    async function handleLogin (email, password) {
+        setIsLoading(true)
+        if (!email || !password) {
+            Alert.alert(
+                "Error !",
+                "Please fill in all fields",
+                [
+                  {
+                    text: "OK",
+                    onPress: () => {
+                        navigate.navigate("SignIn")
+                        setIsLoading(false)
+                    },
+                  },
+                ],
+                { cancelable: false }
+              );  
+            return
+        }
+        
+        fetch(`https://mobileimsbackend.onrender.com/user?email=${email}&password=${password}`,{
+            method: 'GET'
+        })
+        .then(response => response.json())
+        .then(data => {
+            
+            if (data.message ==="Invalid email") {
+                setIsLoading(false)
+                setEmailError(true)
+            }
+            if (data.message === 'Invalid password') {
+                setIsLoading(false)
+                setPasswordError(true)
+            }
+            else {
+                if (data.access_token) {
+                    SecureStore.setItemAsync('access_token', data.access_token)
+                    setToken(data.access_token)
+                    fetch(`https://mobileimsbackend.onrender.com/protected/user`,{
+                      method: 'GET',
+                      headers: {
+                        'Authorization': `Bearer ${Token}`,
+                        'Content-Type': 'application/json'
+                      }
+                    })
+                    .then(response => response.json())
+                    .then(data => {  
+                      console.log(data)                  
+                      setUser(data)
+                      setIsLoading(false)                    
+                      navigate.navigate("Home")
+                    })
+                    .catch(error => {
+                      console.error(error)
+                    })             
+          
+                }
+                else {
+                    setIsLoading(false),
+                    Alert.alert(
+                       
+                        "Error !",
+                        "Invalid password!",
+                        [
+                          {
+                            text: "OK",
+                            onPress: () => {
+                                navigate.navigate("SignIn")
+                            },
+                          },
+                        ],
+                        { cancelable: false }
+                    );  
+                }
+            } 
+        })
+
     }
 
     fetch(`https://mobileimsbackend.onrender.com/user/${email}`, {
@@ -90,6 +179,7 @@ function SignIn({ navigation: navigate }) {
           { cancelable: false }
         );
 
+
     }
   }, [emailError])
 
@@ -120,6 +210,53 @@ function SignIn({ navigation: navigate }) {
             >
             </TextInput>
           </View>
+
+    useEffect(() => {
+        if (passwordError) {
+            setIsLoading(false),
+            Alert.alert(
+                "Error !",
+                "Invalid password!",
+                [
+                  {
+                    text: "OK",
+                    onPress: () => {
+                        navigate.navigate("SignIn")
+                        setPasswordError(false)
+                    },
+                  },
+                ],
+                { cancelable: false }
+              );  
+        }
+    }, [passwordError])
+
+    return (
+        <View style={styles.container}>
+            <View style={styles.imageContainer}>
+                <Image style={styles.logo} source={require('../assets/darkLogo.png')} />
+                <Text style={styles.welcomeText}>Welcome to Moringa School IMS ! </Text>
+            </View>
+            <View style={styles.formContainer}>
+            <View style={{ flexDirection: 'column', alignItems: 'center', marginTop: 20, gap: 20, backgroundColor: colors.darkerShadeOfWhite}}>
+                <Text style={{
+                  width: '100%',
+                  fontSize: 21,
+                  fontWeight: 'bold',
+                  color: colors.blue,
+                  textAlign: 'center',
+                  marginBottom: 10,
+                  
+                }}>Sign in to your account</Text>
+                <View>
+                <Text style={styles.label}>Email</Text>
+                <TextInput
+                placeholder='john doe@gmail.com'
+                value={email}
+                onChangeText={(text) => setEmail(text)}
+                style={styles.formField}
+                >
+
 
           <View>
             <Text style={styles.label}>Password</Text>
