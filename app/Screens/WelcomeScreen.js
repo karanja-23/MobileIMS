@@ -28,9 +28,13 @@ function WelcomeScreen({ navigation }) {
               })
                 .then((response) => response.json())
                 .then((data) => {
-                  setData(data.assets);
+                  if (data.assets) {
+                    setData(data.assets);
+                  }
                 })
-                .then(() => navigate.navigate("Home"));
+                .then(() => {
+                  navigate.navigate("Home")
+                });
             })
 
             .catch((error) => {

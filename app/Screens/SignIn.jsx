@@ -6,15 +6,17 @@ import { useContext } from "react";
 import Loading from '../Components/Loading';
 import { ActivityIndicator } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
+import { useNavigation } from '@react-navigation/native';
 
-function SignIn({navigation: navigate}) {
+function SignIn() {
     const [isLoading, setIsLoading] = useState(false)
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [emailError, setEmailError] = useState(false)
     const {user,setUser} = useContext(UserContext)
     const [passwordError, setPasswordError] = useState(false)
-    const {Token, setToken} = useContext(UserContext)
+    const {Token, setToken, data, setData} = useContext(UserContext)
+    const navigate = useNavigation()
 
     async function handleLogin (email, password) {
         setIsLoading(true)
@@ -54,18 +56,45 @@ function SignIn({navigation: navigate}) {
                 if (data.access_token) {
                     SecureStore.setItemAsync('access_token', data.access_token)
                     setToken(data.access_token)
-                    fetch(`https://mobileimsbackend.onrender.com/protected/user`,{
-                      method: 'GET',
-                      headers: {
-                        'Authorization': `Bearer ${Token}`,
-                        'Content-Type': 'application/json'
-                      }
-                    })
-                    .then(response => response.json())
-                    .then(data => {  
-                      console.log(data)                  
-                      setUser(data)
-                      setIsLoading(false)                    
+                    async function updateUser() {
+                      fetch(`https://mobileimsbackend.onrender.com/protected/user`,{
+                        method: 'GET',
+                        headers: {
+                          'Authorization': `Bearer ${data.access_token}`,
+                          'Content-Type': 'application/json'
+                        }
+                      })
+                      .then(response => response.json())
+                      .then(data => {                      
+                        if (data) {
+                          setUser(data)
+                        }                              
+                      })
+                    }
+                    
+
+                    async function updateAssets() {
+                      
+                      await fetch("https://mobileimsbackend.onrender.com/assets", {
+                        method: "GET",
+                      })
+                        .then((response) => response.json())
+                        .then((data) => {
+                          if (data.assets) {
+                            setData(data.assets);
+                          }
+                        })
+                 
+                        .then(() => {
+                            
+                          setIsLoading(false)
+                                                
+                        
+                      }) 
+                    
+                  }
+                    Promise.all([updateUser(), updateAssets()])
+                    .then(() => {
                       navigate.navigate("Home")
                     })
                     .catch(error => {
