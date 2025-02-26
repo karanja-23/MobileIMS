@@ -1,28 +1,21 @@
 import { DataTable,Searchbar, } from "react-native-paper"
 import { View,StyleSheet,TouchableOpacity, Text, Dimensions } from "react-native"
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
+import { UserContext } from "../Contexts/userContext";
 import colors from "../config/colors"
 import Icon from 'react-native-vector-icons/MaterialIcons';
 function Table(){
-    const [data, setData] = useState([])
+    const {data, setData} = useContext(UserContext)
     const [query, setQuery] = useState('')
     const [filteredData, setFilteredData] = useState(data);
     const [currentPage, setCurrentPage] = useState(1);
     const [entriesToDisplay, setEntriesToDisplay] = useState(data.slice(0, limit));
 
     useEffect(()=> {
-        setQuery('')
-        fetch('https://mobileimsbackend.onrender.com/assets',{
-            method: 'GET'
-        })
-        .then(response => response.json())
-        .then(data => {
-            
-            setData(data.assets) 
-            setEntriesToDisplay(data.assets.slice(0, limit));
-                      
-        })
-    },[])
+        setQuery('')        
+        setEntriesToDisplay(data.slice(0, limit));
+  
+    },[data])
     function handleSearch(query) {
         setQuery(query);
         const filteredData = data.filter(item => item.name.toLowerCase().includes(query.toLowerCase()));

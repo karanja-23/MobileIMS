@@ -5,7 +5,7 @@ import { UserContext } from "../Contexts/userContext";
 import { useContext } from "react";
 import { useNavigation } from "@react-navigation/native";
 function WelcomeScreen({navigation}) {
-  const {setUser,setToken} = useContext(UserContext)
+  const {setUser,setToken, setData} = useContext(UserContext)
   const navigate = useNavigation();
   useEffect(() => {
     async function checkToken() {
@@ -21,12 +21,20 @@ function WelcomeScreen({navigation}) {
             }
           })
           .then(response => response.json())
-          .then(data => {  
-                             
+          .then(data => {                              
             setUser(data)
-                              
             navigate.navigate("Home")
           })
+          fetch('https://mobileimsbackend.onrender.com/assets',{
+            method: 'GET'
+        })
+        .then(response => response.json())
+        .then(data => {
+            
+            setData(data.assets) 
+                        
+        })      
+          
           .catch(error => {
             console.error(error)
           })             
