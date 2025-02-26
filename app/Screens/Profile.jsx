@@ -7,6 +7,7 @@ import { text } from "@fortawesome/fontawesome-svg-core";
 import { Alert } from 'react-native';
 function Profile({navigation}){
     const userRef = useRef(null);
+    const {Token} = useContext(UserContext)
    const {setUser,user} = useContext(UserContext)
    const [name, setName] = useState(user.username)
    const [email, setEmail] = useState(user.email)
@@ -46,13 +47,18 @@ function Profile({navigation}){
             
             Alert.alert("Profile edited successfully")
             setTimeout(() => {
-                fetch(`https://mobileimsbackend.onrender.com/user/${email}`,{
-                    method: 'GET'
-                })
+                
+                fetch(`https://mobileimsbackend.onrender.com/protected/user`,{
+                    method: 'GET',
+                    headers: {
+                      'Authorization': `Bearer ${Token}`,
+                      'Content-Type': 'application/json'
+                    }
+                  })
                 .then(response => response.json())
                 .then(data => {
-                    setUser(data.user)
-                    
+                    setUser(data)
+                                       
                 })
             },1000)
             

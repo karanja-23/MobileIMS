@@ -5,6 +5,7 @@ import { UserContext } from "../Contexts/userContext";
 import { useContext } from "react";
 import Loading from '../Components/Loading';
 import { ActivityIndicator } from 'react-native';
+import * as SecureStore from 'expo-secure-store';
 
 function SignIn({navigation: navigate}) {
     const [isLoading, setIsLoading] = useState(false)
@@ -12,8 +13,10 @@ function SignIn({navigation: navigate}) {
     const [password, setPassword] = useState('')
     const [emailError, setEmailError] = useState(false)
     const {user,setUser} = useContext(UserContext)
+    const [passwordError, setPasswordError] = useState(false)
+    const {Token, setToken} = useContext(UserContext)
 
-    function handleLogin (email, password) {
+    async function handleLogin (email, password) {
         setIsLoading(true)
         if (!email || !password) {
             Alert.alert(
@@ -33,22 +36,42 @@ function SignIn({navigation: navigate}) {
             return
         }
         
-        fetch(`https://mobileimsbackend.onrender.com/user/${email}`,{
+        fetch(`https://mobileimsbackend.onrender.com/user?email=${email}&password=${password}`,{
             method: 'GET'
         })
         .then(response => response.json())
         .then(data => {
             
-            if (data.message) {
+            if (data.message ==="Invalid email") {
                 setIsLoading(false)
                 setEmailError(true)
             }
+            if (data.message === 'Invalid password') {
+                setIsLoading(false)
+                setPasswordError(true)
+            }
             else {
-                if (data.user.password!== undefined && data.user.password == password) {
-                    setUser(data.user)
-                    setIsLoading(false)
-                    navigate.navigate("Home")
-                    
+                if (data.access_token) {
+                    SecureStore.setItemAsync('access_token', data.access_token)
+                    setToken(data.access_token)
+                    fetch(`https://mobileimsbackend.onrender.com/protected/user`,{
+                      method: 'GET',
+                      headers: {
+                        'Authorization': `Bearer ${Token}`,
+                        'Content-Type': 'application/json'
+                      }
+                    })
+                    .then(response => response.json())
+                    .then(data => {  
+                      console.log(data)                  
+                      setUser(data)
+                      setIsLoading(false)                    
+                      navigate.navigate("Home")
+                    })
+                    .catch(error => {
+                      console.error(error)
+                    })             
+          
                 }
                 else {
                     setIsLoading(false),
@@ -90,6 +113,26 @@ function SignIn({navigation: navigate}) {
 
         }
     }, [emailError])
+
+    useEffect(() => {
+        if (passwordError) {
+            setIsLoading(false),
+            Alert.alert(
+                "Error !",
+                "Invalid password!",
+                [
+                  {
+                    text: "OK",
+                    onPress: () => {
+                        navigate.navigate("SignIn")
+                        setPasswordError(false)
+                    },
+                  },
+                ],
+                { cancelable: false }
+              );  
+        }
+    }, [passwordError])
 
     return (
         <View style={styles.container}>
