@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
     },
     formContainer: {
       width: '100%',
-      height: height - 300,
+      height: height - 250,
       backgroundColor: colors.darkerShadeOfWhite,
       borderRadius: 20,
       alignItems: 'center',
