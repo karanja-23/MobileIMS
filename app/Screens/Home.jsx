@@ -39,7 +39,7 @@ const width = Dimensions.get('window').width
 const height = Dimensions.get('window').height
 const styles = StyleSheet.create({
     container: {
-        marginTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+        marginTop: Platform.OS === 'android' ? StatusBar.currentHeight :0,
         
     },
     prompt: {
