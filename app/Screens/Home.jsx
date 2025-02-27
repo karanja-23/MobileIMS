@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
         
     },
     prompt: {
-        marginTop: height * 0.16,
+        marginTop: Platform.OS === 'ios' ? height * 0.19 : height * 0.16,
         marginLeft: '30%',
         paddingLeft: 10,
         paddingRight: 30,
