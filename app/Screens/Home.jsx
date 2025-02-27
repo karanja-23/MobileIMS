@@ -3,9 +3,9 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import Header from "../Components/Header"
 import colors from "../config/colors"
 import Table from "../Components/Table";
-import { useState } from "react";
-function Home ({navigation}){
-    const [isLoading, setIsLoading] = useState(true);
+import { useNavigation } from "@react-navigation/native";
+function Home (){
+    const navigation = useNavigation()
     const width = Dimensions.get('window').width
     const height = Dimensions.get('window').height
     return(

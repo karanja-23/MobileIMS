@@ -1,27 +1,31 @@
 import { DataTable,Searchbar, } from "react-native-paper"
 import { View,StyleSheet,TouchableOpacity, Text, Dimensions } from "react-native"
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext,useMemo, use } from "react";
 import { UserContext } from "../Contexts/userContext";
 import colors from "../config/colors"
 import Icon from 'react-native-vector-icons/MaterialIcons';
-function Table(){
-    const {data, setData} = useContext(UserContext)
-    const [query, setQuery] = useState('')
-    const [filteredData, setFilteredData] = useState(data);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [entriesToDisplay, setEntriesToDisplay] = useState(data.slice(0, limit));
 
+function Table(){
+    const limit = 5
+    const {data, setData} = useContext(UserContext)
+    const memoizedData = useMemo(() => data, [data]);
+    const memoizedSetData = useMemo(() => setData, [setData]);
+    const [query, setQuery] = useState('')
+    const [filteredData, setFilteredData] = useState(memoizedData);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [entriesToDisplay, setEntriesToDisplay] = useState(memoizedData?.slice(0, limit));
+   
     useEffect(()=> {
         setQuery('')        
-        setEntriesToDisplay(data.slice(0, limit));
+        setEntriesToDisplay(memoizedData?.slice(0, limit));
   
-    },[data])
+    },[memoizedData])
     function handleSearch(query) {
         setQuery(query);
-        const filteredData = data.filter(item => item.name.toLowerCase().includes(query.toLowerCase()));
+        const filteredData = memoizedData?.filter(item => item.name.toLowerCase().includes(query.toLowerCase()));
         setEntriesToDisplay(filteredData.slice(0, limit));
     }
-    const limit = 5
+    
 
 
     const handlePageChange = (page) => {
@@ -70,7 +74,7 @@ function Table(){
                 </DataTable.Title>  
 
             </DataTable.Header>
-            {entriesToDisplay .map((item, index) => (
+            {entriesToDisplay && entriesToDisplay .map((item, index) => (
                 <DataTable.Row style={{height: 30, justifyContent: 'center'}} key={index}>
                    
                     <DataTable.Cell style={{maxWidth: "40%"}} >{item.date_created}</DataTable.Cell>
@@ -79,7 +83,7 @@ function Table(){
                 </DataTable.Row>
             ))}
             <View style={{flexDirection: 'row', justifyContent: 'center', alignItems: 'center',alignSelf: 'flex-start',marginLeft: 15, marginTop: 10, gap: 10}}>
-                <Text>Page {currentPage} of {Math.ceil(data.length / limit)}</Text>
+                <Text>Page {currentPage} of {Math.ceil(data?.length / limit)}</Text>
                 <Icon name="keyboard-arrow-left" size={18} onPress={() => handlePageChange(currentPage - 1)} />
                 <Icon name="keyboard-arrow-right" size={18} onPress={() => handlePageChange(currentPage + 1)} />
             </View>

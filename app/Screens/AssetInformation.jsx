@@ -38,8 +38,7 @@ import {
         else if (data && Object.keys(data).length > 0) {
           setLaoding(false)
           setAssetData(data)
-          setFetchedData(true)
-          
+          setFetchedData(true)          
         }
       })
     },[])
@@ -83,7 +82,7 @@ import {
         >
           Asset Information
         </Text>
-        <View style={{flexDirection: "row", justifyContent: "space-evenly", marginTop: 20}}>
+        <View style={{flexDirection: "row", justifyContent: "space-evenly", marginTop: 20, opacity: loading ? 0.4 : 1}}>
           <View>
             <Text style={styles.titles}>Asset Id</Text>
             <TextInput
@@ -93,15 +92,15 @@ import {
             ></TextInput>
           </View>
           <View>
-            <Text style={styles.titles}>Asset Name</Text>
+            <Text style={[styles.titles,{opacity: loading ? 0.4 : 1}]}>Asset Name</Text>
             <TextInput
               value={fetchedData ? assetData.asset.name : ''}
               placeholder="Asset Name"
-              style={styles.input}
+              style={[styles.input,{opacity: loading ? 0.4 : 1}]}
             ></TextInput>
           </View>
         </View>
-        <View style={{marginTop: 20}}>
+        <View style={{marginTop: 20, opacity: loading ? 0.4 : 1}}>
            <Text style={{fontSize:13, marginBottom: 5 ,fontWeight:19,fontWeight: "900", color: colors.grey,marginLeft: "10%"}}>Asset description</Text>
            <TextInput 
            value={fetchedData ? assetData.asset.description : ''}            
@@ -112,7 +111,7 @@ import {
            </TextInput>
         </View>
         
-        <View style={{flexDirection: "row", justifyContent: "space-evenly", marginTop: 20}}>
+        <View style={{flexDirection: "row", justifyContent: "space-evenly", marginTop: 20, opacity: loading ? 0.4 : 1}}>
           <View>
             <Text style={styles.titles}>Asset condition</Text>
             <TextInput
@@ -131,7 +130,7 @@ import {
           </View>
         </View>  
 
-        <View style={{flexDirection: "row", justifyContent: "space-evenly", marginTop: 20, marginBottom: 30}}>
+        <View style={{flexDirection: "row", justifyContent: "space-evenly", marginTop: 20, marginBottom: 30, opacity: loading ? 0.4 : 1}}>
           <View>
             <Text style={styles.titles}>Asset condition</Text>
             <TextInput
@@ -149,11 +148,11 @@ import {
             ></TextInput>
           </View>
         </View> 
-        <View style={{width: "80%", alignSelf: "center"}} >
+        <View style={{width: "80%", alignSelf: "center",backgroundColor:colors.blue}} >
         <Button
           title="Borrow Asset"
-          color={colors.orange}
-          
+          color={colors.orange}        
+          disabled={loading}       
         >
         </Button>         
         </View>            
@@ -199,7 +198,8 @@ import {
       justifyContent: "center",
       alignItems: "center",
       borderRadius: 10,
-      zIndex: 3
+      zIndex: 3,
+      
       
     }
   });

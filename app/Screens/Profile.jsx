@@ -5,15 +5,16 @@ import { UserContext } from "../Contexts/userContext";
 import { useContext, useEffect, useState, useRef } from "react";
 import { text } from "@fortawesome/fontawesome-svg-core";
 import { Alert } from 'react-native';
+import * as SecureStore from 'expo-secure-store';
 function Profile({navigation}){
     const userRef = useRef(null);
-    const {Token} = useContext(UserContext)
+    const {Token,setToken,setData} = useContext(UserContext)
    const {setUser,user} = useContext(UserContext)
-   const [name, setName] = useState(user.username)
-   const [email, setEmail] = useState(user.email)
-   const [contact, setContact] = useState(user.phone_number)
-   const [password, setPassword] = useState(user.password)
-   const [profileName, setProfileName] = useState(user.username)
+   const [name, setName] = useState(user?.username)
+   const [email, setEmail] = useState(user?.email)
+   const [contact, setContact] = useState(user?.phone_number)
+   const [password, setPassword] = useState(user?.password)
+   const [profileName, setProfileName] = useState(user?.username)
    async function handleEdit(){
     const userData = {
         username: name,
@@ -68,7 +69,7 @@ function Profile({navigation}){
    }
    useEffect(() => {
     
-    setProfileName(user.username)
+    setProfileName(user?.username)
    },[user])
     return(
         <View style={styles.container}>
@@ -130,7 +131,16 @@ function Profile({navigation}){
                 <Button 
                   title="Logout"
                   color={colors.orange}
-                  onPress={() => navigation.navigate('SignIn')}
+                  onPress={() => {
+                    async function logout() {
+                      await SecureStore.deleteItemAsync('access_token');
+                      setUser(null);
+                      setToken(null);
+                      setData(null);
+                    }
+                    logout()
+                    navigation.navigate('SignIn')
+                  }}
                 >
                 </Button>                
                 </View>
