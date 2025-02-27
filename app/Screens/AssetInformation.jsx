@@ -67,10 +67,9 @@ import {
       if (asset.status === "Available") {
         const data = {
           asset_id: asset.asset_id,
-          id: user.user_id
+          id: user.id
         }
         console.log(data)
-       
         fetch('https://mobileimsbackend.onrender.com/scanned', {
           method: 'POST',
           headers: {
@@ -80,8 +79,9 @@ import {
         })
         .then(response => response.json())
         .then(data => {
-          console.log(data)
+          console.log("hi")
           if ( data.message === 'Scanned entry created successfully') {
+            console.log(data)
             Alert.alert(
               "Success",
               `A request has to borrow ${asset.name} been sent to the admin for approval`,
