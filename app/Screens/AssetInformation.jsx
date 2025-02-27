@@ -63,7 +63,7 @@ import {
     
 
     return (
-      <View style={styles.container}>
+      <View style={[styles.container,loading ? {opacity: 0.4} : null]}>
         
          { loading ? <View style={styles.alert}>
             <Loading />
@@ -149,11 +149,12 @@ import {
             ></TextInput>
           </View>
         </View> 
-        <View style={{width: "80%", alignSelf: "center"}} >
+        <View style={{width: "80%", alignSelf: "center",backgroundColor:colors.blue, opacity: 1}} >
         <Button
           title="Borrow Asset"
-          color={colors.orange}
+          color={'inherit'}
           
+                    
         >
         </Button>         
         </View>            
@@ -199,7 +200,8 @@ import {
       justifyContent: "center",
       alignItems: "center",
       borderRadius: 10,
-      zIndex: 3
+      zIndex: 3,
+      
       
     }
   });

@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Platform,Dimensions, StatusBar, Image, TextInput, Button, Alert } from 'react-native'
+import { View, Text, StyleSheet, Platform,Dimensions, StatusBar, Image, TextInput, Button, Alert, TouchableOpacity } from 'react-native'
 import colors from '../config/colors'
 import { useEffect, useState } from 'react'
 import { UserContext } from "../Contexts/userContext";
@@ -7,6 +7,7 @@ import Loading from '../Components/Loading';
 import { ActivityIndicator } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { useNavigation } from '@react-navigation/native';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 function SignIn() {
     const [isLoading, setIsLoading] = useState(false)
@@ -17,6 +18,7 @@ function SignIn() {
     const [passwordError, setPasswordError] = useState(false)
     const {Token, setToken, data, setData} = useContext(UserContext)
     const navigate = useNavigation()
+    const [showPassword, setShowPassword] = useState(false);
 
     async function handleLogin (email, password) {
         setIsLoading(true)
@@ -192,16 +194,29 @@ function SignIn() {
                 </TextInput>                
                 </View>
                 <View>
-                <Text style={styles.label}>Password</Text>
-                <TextInput
+            <Text style={styles.label}>Password</Text>
+            <View style={styles.formField}>
+              <TextInput
                 placeholder='enter your password ...'
                 value={password}
                 onChangeText={(text) => setPassword(text)}
-                style={styles.formField}
-                >
-
-                </TextInput>                
-                </View>  
+                style={{ flex: 1, paddingRight: 30 }}
+                secureTextEntry={!showPassword}
+              >
+              </TextInput>
+              <TouchableOpacity
+                onPress={() => setShowPassword(!showPassword)}
+                style={{ position: 'absolute', right: 0, top: 0, bottom: 0, justifyContent: 'center', marginRight: 10 }}
+              >
+                <MaterialIcons
+                  name={showPassword ? 'visibility-off' : 'visibility'}
+                  size={16}
+                  color={colors.grey}
+                  
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
              
             </View>  
             <View style={{width: "70%", alignSelf: "center", marginTop: 40}} >
