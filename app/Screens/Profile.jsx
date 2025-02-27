@@ -123,6 +123,7 @@ function Profile({navigation}){
                 <Button 
                 onPress={() =>handleEdit()}
                 title="Edit details"
+                titleStyle={{fontweight: Platform.OS === 'ios' ? 'normal' : 'normal'}}
                 color={colors.blue}
                 
                 >
@@ -156,26 +157,31 @@ const styles = StyleSheet.create({
         
     },
     profile:{
-        height: '20%',
+        paddingTop: Platform.OS === 'ios' ? 50 : 30,
+        paddingBottom: Platform.OS === 'ios' ? 20 : 0,
+        height: Platform.OS === 'ios' ? "25%": "23%",
+        marginBottom: Platform.OS === 'ios' ? 20 : 20,
         backgroundColor: colors.blue,
         alignItems: 'center',
         justifyContent: 'center',   
     },
     back: {
         position: 'absolute',
-        top: 20,
+        top: Platform.OS === 'ios' ? 55 : 20,
         left: 20,
         zIndex: 1
     },
     input:{
         borderBottomWidth: 1,
-        marginBottom: 25,
+        marginBottom: Platform.OS === 'ios' ? 35 : 0,
+        paddingBottom: Platform.OS === 'ios' ? 10 : 0,
         borderBottomColor: colors.grey
     },
     label:{
         color: colors.blue,
         fontSize: 16,
         fontWeight: '600',
+        marginBottom: Platform.OS === 'ios' ? 10 : 0,
        
     }
 })

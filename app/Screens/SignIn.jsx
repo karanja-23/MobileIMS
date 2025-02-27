@@ -252,6 +252,7 @@ const styles = StyleSheet.create({
       alignItems: 'center',
       justifyContent: 'flex-start',
       padding: 20,
+      paddingTop: Platform.OS === 'ios' ? 40 : 20,
     },
     imageContainer: {
       flexDirection: 'column',
@@ -270,7 +271,7 @@ const styles = StyleSheet.create({
     },
     welcomeText: {
       width: '80%',
-      fontSize: 20,
+      fontSize: 18,
       fontWeight: 'bold',
       color: colors.white,
       textAlign: 'center',
@@ -280,15 +281,16 @@ const styles = StyleSheet.create({
     },
     formContainer: {
       width: '100%',
-      height: height - 190,
+      height: height - 300,
       backgroundColor: colors.darkerShadeOfWhite,
-      borderTopLeftRadius: 20,
-      borderTopRightRadius: 20,
+      borderRadius: 20,
       alignItems: 'center',
       justifyContent: 'flex-start',
       paddingTop: 0,
       padding: 20,
-      opacity: 0.99
+      paddingTop: height * 0.033,
+      opacity: 0.99,
+      marginTop: height * 0.03
     },
     formField: {
       width: width - 100,
