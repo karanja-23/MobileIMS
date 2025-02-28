@@ -173,8 +173,8 @@ const styles = StyleSheet.create({
     },
     input:{
         borderBottomWidth: 1,
-        marginBottom: Platform.OS === 'ios' ? 35 : 0,
-        paddingBottom: Platform.OS === 'ios' ? 10 : 0,
+        marginBottom: Platform.OS === 'ios' ? 35 : 15,
+        paddingBottom: Platform.OS === 'ios' ? 10 : 3,
         borderBottomColor: colors.grey
     },
     label:{

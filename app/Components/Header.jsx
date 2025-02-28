@@ -36,7 +36,7 @@ const deviceHeight = Dimensions.get('window').height
 const styles = StyleSheet.create({
     header: {
         backgroundColor: colors.blue,
-        height: Platform.OS === 'ios' ? deviceHeight * 0.15 : deviceHeight * 0.13,
+        height: Platform.OS === 'ios' ? deviceHeight * 0.15 : deviceHeight * 0.12,
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',

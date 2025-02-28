@@ -32,7 +32,6 @@ import {
       })
       .then(response => response.json())
       .then(data => {
-        
         if (data.message === "Asset not found") {
           setLaoding(false)
           setShowAlert(true)
@@ -153,7 +152,7 @@ import {
             <TextInput
               value={fetchedData ? assetData?.asset?.name : ''}
               placeholder="Asset Name"
-              style={[styles.input,{opacity: loading ? 0.4 : 1}]}
+              style={styles.input}
             ></TextInput>
           </View>
         </View>
