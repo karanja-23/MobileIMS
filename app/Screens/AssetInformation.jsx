@@ -11,11 +11,13 @@ import {
   } from "react-native";
   import Header from "../Components/Header";
   import colors from "../config/colors";
-  import { useEffect, useState } from "react";
+  import { UserContext } from "../Contexts/userContext";
+  import { useEffect, useState,useContext, use } from "react";
   import { useNavigation } from "@react-navigation/native";
   import Loading from "../Components/Loading";
   
   function AssetInformation({route}) {
+    const {user} = useContext(UserContext)
     const navigate = useNavigation()
     const {data} = route.params 
     const [assetData, setAssetData] = useState(false)
@@ -60,6 +62,61 @@ import {
       }
     }, [showAlert]);
     
+    function handleBorrow(){
+      const asset = assetData.asset
+      if (asset.status === "Available") {
+        const data = {
+          asset_id: asset.asset_id,
+          id: user.id
+        }
+        console.log(data)
+        fetch('https://mobileimsbackend.onrender.com/scanned', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log("hi")
+          if ( data.message === 'Scanned entry created successfully') {
+            console.log(data)
+            Alert.alert(
+              "Success",
+              `A request has to borrow ${asset.name} been sent to the admin for approval`,
+              [
+                {
+                  text: "OK",
+                  onPress: () => {
+                    navigate.navigate("Home")
+                  },
+                },
+              ],
+              { cancelable: false }
+            );
+          }
+        })
+      }
+      else {
+        Alert.alert(
+          "Error",
+          "Asset is not available!",
+          [
+            {
+              text: "OK",
+              onPress: () => {
+                setAssetData(false)
+                navigate.goBack('Scan')
+              },
+            },
+          ],
+          { cancelable: false }
+        );
+      }
+
+
+    }
 
     return (
       <View style={styles.container}>
@@ -86,7 +143,7 @@ import {
           <View>
             <Text style={styles.titles}>Asset Id</Text>
             <TextInput
-             value={fetchedData ? assetData.asset.asset_id : ''}
+             value={fetchedData ? assetData?.asset?.asset_id : ''}
               placeholder="Asset Name"
               style={styles.input}
             ></TextInput>
@@ -94,7 +151,7 @@ import {
           <View>
             <Text style={[styles.titles,{opacity: loading ? 0.4 : 1}]}>Asset Name</Text>
             <TextInput
-              value={fetchedData ? assetData.asset.name : ''}
+              value={fetchedData ? assetData?.asset?.name : ''}
               placeholder="Asset Name"
               style={[styles.input,{opacity: loading ? 0.4 : 1}]}
             ></TextInput>
@@ -103,7 +160,7 @@ import {
         <View style={{marginTop: 20, opacity: loading ? 0.4 : 1}}>
            <Text style={{fontSize:13, marginBottom: 5 ,fontWeight:19,fontWeight: "900", color: colors.grey,marginLeft: "10%"}}>Asset description</Text>
            <TextInput 
-           value={fetchedData ? assetData.asset.description : ''}            
+           value={fetchedData ? assetData?.asset?.description : ''}            
            multiline={true}
            numberOfLines={6}
            style={{width:"80%", backgroundColor: "lightgrey" ,textAlignVertical: "top" ,alignSelf: "center",height: 130}}>
@@ -115,7 +172,7 @@ import {
           <View>
             <Text style={styles.titles}>Asset condition</Text>
             <TextInput
-              value={fetchedData ? assetData.asset.condition : ''}
+              value={fetchedData ? assetData?.asset?.condition : ''}
               placeholder="Asset Name"
               style={styles.input}
             ></TextInput>
@@ -123,7 +180,7 @@ import {
           <View>
             <Text style={styles.titles}>Category</Text>
             <TextInput
-            value={fetchedData ? assetData.asset.category : ''}
+            value={fetchedData ? assetData?.asset?.category : ''}
               placeholder="Asset Name"
               style={styles.input}
             ></TextInput>
@@ -134,7 +191,7 @@ import {
           <View>
             <Text style={styles.titles}>Asset condition</Text>
             <TextInput
-              value={fetchedData ? assetData.asset.space : ''}
+              value={fetchedData ? assetData?.asset?.space : ''}
               placeholder="Asset Space"
               style={styles.input}
             ></TextInput>
@@ -142,7 +199,7 @@ import {
           <View>
             <Text style={styles.titles}>Status</Text>
             <TextInput
-            value={fetchedData ? assetData.asset.status : ''}
+            value={fetchedData ? assetData?.asset?.status : ''}
               placeholder="Asset Name"
               style={styles.input}
             ></TextInput>
@@ -152,7 +209,8 @@ import {
         <Button
           title="Borrow Asset"
           color={colors.orange}        
-          disabled={loading}       
+          disabled={loading}    
+          onPress={handleBorrow}   
         >
         </Button>         
         </View>            
