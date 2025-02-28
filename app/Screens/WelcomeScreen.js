@@ -4,6 +4,9 @@ import * as SecureStore from "expo-secure-store";
 import { UserContext } from "../Contexts/userContext";
 import { useContext } from "react";
 import { useNavigation } from "@react-navigation/native";
+import { ActivityIndicator } from 'react-native'
+import { Colors } from "react-native/Libraries/NewAppScreen";
+import colors from "../config/colors";
 function WelcomeScreen({ navigation }) {
   const { setUser, setToken, setData } = useContext(UserContext);
   const navigate = useNavigation();
@@ -53,6 +56,10 @@ function WelcomeScreen({ navigation }) {
   return (
     <ImageBackground style={styles.background}>
       <Image style={styles.logo} source={require("../assets/logo.png")} />
+      <View >
+        <ActivityIndicator size="large" color={colors.orange} />
+      </View>
+
     </ImageBackground>
   );
 }
@@ -60,6 +67,7 @@ function WelcomeScreen({ navigation }) {
 const styles = StyleSheet.create({
   background: {
     flex: 1,
+    flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
   },
