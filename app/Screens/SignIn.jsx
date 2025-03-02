@@ -69,35 +69,20 @@ function SignIn() {
                       .then(response => response.json())
                       .then(data => {                      
                         if (data) {
-                          setUser(data)
+                          setUser(data) 
+                          setData(data.scanned_assets)                         
                         }                              
                       })
+      
                     }
                     
 
-                    async function updateAssets() {
-                      
-                      await fetch("https://mobileimsbackend.onrender.com/assets", {
-                        method: "GET",
-                      })
-                        .then((response) => response.json())
-                        .then((data) => {
-                          if (data.assets) {
-                            setData(data.assets);
-                          }
-                        })
-                 
-                        .then(() => {
-                            
-                          setIsLoading(false)
-                                                
-                        
-                      }) 
-                    
-                  }
-                    Promise.all([updateUser(), updateAssets()])
+                  
+                    Promise.all(updateUser(), )
                     .then(() => {
-                      navigate.navigate("Home")
+                      setTimeout(() => {
+                        navigate.navigate("Home")
+                      }, 1000);
                     })
                     .catch(error => {
                       console.error(error)

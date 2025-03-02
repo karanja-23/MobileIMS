@@ -10,16 +10,17 @@ import {
     Alert
   } from "react-native";
   import Header from "../Components/Header";
+  import * as Notifications from "expo-notifications";
   import colors from "../config/colors";
   import { UserContext } from "../Contexts/userContext";
-  import { useEffect, useState,useContext, use } from "react";
+  import { useEffect, useState,useContext, useCallback } from "react";
   import { useNavigation } from "@react-navigation/native";
   import Loading from "../Components/Loading";
   
   function AssetInformation({route}) {
-    const {user} = useContext(UserContext)
+    const {user,setData} = useContext(UserContext)
     const navigate = useNavigation()
-    const {data} = route.params 
+    
     const [assetData, setAssetData] = useState(false)
     const [fetchedData, setFetchedData] = useState(false)
     const [loading,setLaoding] = useState(false)
@@ -27,19 +28,22 @@ import {
     const [showAlert, setShowAlert] = useState(false);
     useEffect(() => {
       setLaoding(true)
-      fetch(`https://mobileimsbackend.onrender.com/asset/${data}`,{
+      fetch(`http://172.236.2.18:5050/assets/filter?serial_no=${route.params.data}`,{
         method: 'GET'
       })
       .then(response => response.json())
       .then(data => {
-        if (data.message === "Asset not found") {
+               
+        if (data.length > 0) {
+          
+          setLaoding(false)
+          setAssetData(data[0])
+          setFetchedData(true)  
+                 
+        }
+        else{
           setLaoding(false)
           setShowAlert(true)
-        }
-        else if (data && Object.keys(data).length > 0) {
-          setLaoding(false)
-          setAssetData(data)
-          setFetchedData(true)          
         }
       })
     },[])
@@ -61,14 +65,16 @@ import {
       }
     }, [showAlert]);
     
-    function handleBorrow(){
-      const asset = assetData.asset
-      if (asset.status === "Available") {
+    const handleBorrow = useCallback(()=>{
+      
+      
+      if (assetData) {
         const data = {
-          asset_id: asset.asset_id,
-          id: user.id
+          name: assetData.item,
+          user_id: user.id
+         
         }
-        console.log(data)
+        
         fetch('https://mobileimsbackend.onrender.com/scanned', {
           method: 'POST',
           headers: {
@@ -78,12 +84,12 @@ import {
         })
         .then(response => response.json())
         .then(data => {
-          console.log("hi")
+          
           if ( data.message === 'Scanned entry created successfully') {
-            console.log(data)
+            updateData()
             Alert.alert(
               "Success",
-              `A request has to borrow ${asset.name} been sent to the admin for approval`,
+              `A request to borrow ${assetData.item} been sent to the admin for approval`,
               [
                 {
                   text: "OK",
@@ -94,6 +100,28 @@ import {
               ],
               { cancelable: false }
             );
+
+
+          async function updateData(){
+            fetch('https://mobileimsbackend.onrender.com/scanned',{
+              method: 'GET',
+            })
+            .then(response => response.json())
+            .then(data => {
+              setData(data);   
+              
+            })   
+            await Notifications.scheduleNotificationAsync({
+              content: {
+                title: "Moringa IMS",
+                body: `A request to borrow ${assetData.item} been sent to the admin for approval`,
+              },
+              trigger: null,
+              sound: true,
+              vibrate: true,
+            })       
+          
+          }
           }
         })
       }
@@ -115,7 +143,7 @@ import {
       }
 
 
-    }
+    },[assetData])
 
     return (
       <View style={styles.container}>
@@ -140,9 +168,9 @@ import {
         </Text>
         <View style={{flexDirection: "row", justifyContent: "space-evenly", marginTop: 20, opacity: loading ? 0.4 : 1}}>
           <View>
-            <Text style={styles.titles}>Asset Id</Text>
+            <Text style={styles.titles}>Serial Number</Text>
             <TextInput
-             value={fetchedData ? assetData?.asset?.asset_id : ''}
+             value={fetchedData ? assetData?.serial_no: ''}
               placeholder="Asset Name"
               style={styles.input}
             ></TextInput>
@@ -150,7 +178,7 @@ import {
           <View>
             <Text style={[styles.titles,{opacity: loading ? 0.4 : 1}]}>Asset Name</Text>
             <TextInput
-              value={fetchedData ? assetData?.asset?.name : ''}
+              value={fetchedData ? assetData?.item : ''}
               placeholder="Asset Name"
               style={styles.input}
             ></TextInput>
@@ -159,7 +187,7 @@ import {
         <View style={{marginTop: 20, opacity: loading ? 0.4 : 1}}>
            <Text style={{fontSize:13, marginBottom: 5 ,fontWeight:19,fontWeight: "900", color: colors.grey,marginLeft: "10%"}}>Asset description</Text>
            <TextInput 
-           value={fetchedData ? assetData?.asset?.description : ''}            
+           value={fetchedData ? assetData?.specifications : ''}            
            multiline={true}
            numberOfLines={6}
            style={{width:"80%", backgroundColor: "lightgrey" ,textAlignVertical: "top" ,alignSelf: "center",height: 130}}>
@@ -169,9 +197,9 @@ import {
         
         <View style={{flexDirection: "row", justifyContent: "space-evenly", marginTop: 20, opacity: loading ? 0.4 : 1}}>
           <View>
-            <Text style={styles.titles}>Asset condition</Text>
+            <Text style={styles.titles}>Condition</Text>
             <TextInput
-              value={fetchedData ? assetData?.asset?.condition : ''}
+              value={fetchedData ? assetData?.condition : ''}
               placeholder="Asset Name"
               style={styles.input}
             ></TextInput>
@@ -179,7 +207,7 @@ import {
           <View>
             <Text style={styles.titles}>Category</Text>
             <TextInput
-            value={fetchedData ? assetData?.asset?.category : ''}
+            value={fetchedData ? assetData?.class_code : ''}
               placeholder="Asset Name"
               style={styles.input}
             ></TextInput>
@@ -188,17 +216,17 @@ import {
 
         <View style={{flexDirection: "row", justifyContent: "space-evenly", marginTop: 20, marginBottom: 30, opacity: loading ? 0.4 : 1}}>
           <View>
-            <Text style={styles.titles}>Asset condition</Text>
+            <Text style={styles.titles}>Location</Text>
             <TextInput
-              value={fetchedData ? assetData?.asset?.space : ''}
+              value={fetchedData ? assetData?.location_name : ''}
               placeholder="Asset Space"
               style={styles.input}
             ></TextInput>
           </View>
           <View>
-            <Text style={styles.titles}>Status</Text>
+            <Text style={styles.titles}>Assigned to:</Text>
             <TextInput
-            value={fetchedData ? assetData?.asset?.status : ''}
+            value={fetchedData ? assetData?.assigned_to : ''}
               placeholder="Asset Name"
               style={styles.input}
             ></TextInput>
