@@ -18,7 +18,7 @@ function Table(){
     useEffect(()=> {
         setQuery('')        
         setEntriesToDisplay(memoizedData?.slice(0, limit));
-  
+        
     },[memoizedData])
     function handleSearch(query) {
         setQuery(query);
@@ -38,6 +38,7 @@ function Table(){
         setEntriesToDisplay(data.slice(startIndex, endIndex));
         setCurrentPage(page);
     }
+    
     return(
         <View>
         <Searchbar
@@ -77,7 +78,7 @@ function Table(){
             {entriesToDisplay && entriesToDisplay .map((item, index) => (
                 <DataTable.Row style={{height: 30, justifyContent: 'center'}} key={index}>
                    
-                    <DataTable.Cell style={{maxWidth: "40%"}} >{item.date_created}</DataTable.Cell>
+                   <DataTable.Cell style={{maxWidth: "40%"}} >{item.scanned_at.split(' ')[0] + ' ' + item.scanned_at.split(' ')[1] + ' ' + item.scanned_at.split(' ')[2] + ' ' + item.scanned_at.split(' ')[3]}</DataTable.Cell>
                     <DataTable.Cell style={{maxWidth: "40%"}}>{item.name}</DataTable.Cell>
                     <DataTable.Cell style={{maxWidth: "20%"}}> {item.status}</DataTable.Cell>
                 </DataTable.Row>

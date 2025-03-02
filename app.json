@@ -13,13 +13,15 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "UIBackgroundModes": ["processing", "remote-notifications"]
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": ["RECEIVE_BOOT_COMPLETED","VIBRATE"]
     },
     "web": {
       "favicon": "./assets/favicon.png"
