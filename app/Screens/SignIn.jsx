@@ -8,13 +8,14 @@ import { ActivityIndicator } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { useNavigation } from '@react-navigation/native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import * as Notifications from 'expo-notifications';
 
 function SignIn() {
     const [isLoading, setIsLoading] = useState(false)
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [emailError, setEmailError] = useState(false)
-    const {user,setUser} = useContext(UserContext)
+    const {user,setUser,setExpoToken} = useContext(UserContext)
     const [passwordError, setPasswordError] = useState(false)
     const {Token, setToken, data, setData} = useContext(UserContext)
     const navigate = useNavigation()
@@ -56,8 +57,22 @@ function SignIn() {
             }
             else {
                 if (data.access_token) {
+                    
                     SecureStore.setItemAsync('access_token', data.access_token)
                     setToken(data.access_token)
+                    const getExpoToken = async () => {
+                      const token = await Notifications.getExpoPushTokenAsync();
+                      if (token) {
+                        SecureStore.setItemAsync('expo_token', token)
+                        setExpoToken(token)
+                        console.log(
+                          'Expo token:')
+                    }
+                    else{
+                      console.log('no token')
+                    }
+                    }
+                    getExpoToken()
                     async function updateUser() {
                       fetch(`https://mobileimsbackend.onrender.com/protected/user`,{
                         method: 'GET',

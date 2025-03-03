@@ -16,15 +16,17 @@ import {
   import { useEffect, useState,useContext, useCallback } from "react";
   import { useNavigation } from "@react-navigation/native";
   import Loading from "../Components/Loading";
+  import Icon from 'react-native-vector-icons/MaterialIcons';
   
   function AssetInformation({route}) {
-    const {user,setData} = useContext(UserContext)
-    const navigate = useNavigation()
-    
+    const {user,setData,Token} = useContext(UserContext)
+    const navigate = useNavigation()    
+    const [suceess, setSuccess] = useState(false)
     const [assetData, setAssetData] = useState(false)
     const [fetchedData, setFetchedData] = useState(false)
     const [loading,setLaoding] = useState(false)
-    
+    const [itemLoading, setItemLoading] = useState(false)
+
     const [showAlert, setShowAlert] = useState(false);
     useEffect(() => {
       setLaoding(true)
@@ -67,7 +69,7 @@ import {
     
     const handleBorrow = useCallback(()=>{
       
-      
+      setItemLoading(true)
       if (assetData) {
         const data = {
           name: assetData.item,
@@ -87,28 +89,26 @@ import {
           
           if ( data.message === 'Scanned entry created successfully') {
             updateData()
-            Alert.alert(
-              "Success",
-              `A request to borrow ${assetData.item} been sent to the admin for approval`,
-              [
-                {
-                  text: "OK",
-                  onPress: () => {
-                    navigate.navigate("Home")
-                  },
-                },
-              ],
-              { cancelable: false }
-            );
+            setItemLoading(false)
+            setSuccess(true)  
+            setTimeout(() => {
+              setSuccess(false)
+              navigate.navigate("Home")
+            }, 100);
 
 
           async function updateData(){
-            fetch('https://mobileimsbackend.onrender.com/scanned',{
-              method: 'GET',
+            fetch(`https://mobileimsbackend.onrender.com/protected/user`, {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${Token}`,
+                "Content-Type": "application/json",
+              },
             })
-            .then(response => response.json())
+            .then((response) => response.json())
             .then(data => {
-              setData(data);   
+              setData(data.scanned_assets);  
+                            
               
             })   
             await Notifications.scheduleNotificationAsync({
@@ -147,6 +147,9 @@ import {
 
     return (
       <View style={styles.container}>
+        {suceess ? <View style={styles.success}>
+          <Icon name="check" size={50} color={colors.white} style={{alignSelf: 'center'}} />
+        </View> : null}
         
          { loading ? <View style={styles.alert}>
             <Loading />
@@ -234,7 +237,7 @@ import {
         </View> 
         <View style={{width: "80%", alignSelf: "center",backgroundColor:colors.blue}} >
         <Button
-          title="Borrow Asset"
+          title= {itemLoading ? "Loading..." : "Borrow item"}
           color={colors.orange}        
           disabled={loading}    
           onPress={handleBorrow}   
@@ -286,6 +289,20 @@ import {
       zIndex: 3,
       
       
+    },
+    success:{
+      position: "absolute",
+      top: height.height*0.47,
+      left: width.width*0.43,
+      width: width*0.5,
+      height: 3/4 *(width*0.5),
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: colors.orange,
+      padding: 10,
+      opacity: 0.9,
+      borderRadius: "50%",
+      zIndex: 3,
     }
   });
   export default AssetInformation;
