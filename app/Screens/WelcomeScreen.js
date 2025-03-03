@@ -16,7 +16,7 @@ function WelcomeScreen({ navigation }) {
         const token = await SecureStore.getItemAsync("access_token");
         if (token) {
           setToken(token);         
-          fetch(`https://mobileimsbackend.onrender.com/protected/user`, {
+          fetch(`http://172.236.2.18:5000/users/protected/user`, {
             method: "GET",
             headers: {
               Authorization: `Bearer ${token}`,

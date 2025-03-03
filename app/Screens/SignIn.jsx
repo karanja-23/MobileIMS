@@ -41,20 +41,24 @@ function SignIn() {
             return
         }
         
-        fetch(`https://mobileimsbackend.onrender.com/user?email=${email}&password=${password}`,{
-            method: 'GET'
+        fetch('http://172.236.2.18:5000/auth/login',{
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },  
+            body: JSON.stringify({
+                email: email,
+                password: password
+            })
         })
         .then(response => response.json())
         .then(data => {
             
-            if (data.message ==="Invalid email") {
+            if (data.error) {
                 setIsLoading(false)
                 setEmailError(true)
             }
-            if (data.message === 'Invalid password') {
-                setIsLoading(false)
-                setPasswordError(true)
-            }
+
             else {
                 if (data.access_token) {
                     
@@ -74,7 +78,7 @@ function SignIn() {
                     }
                     getExpoToken()
                     async function updateUser() {
-                      fetch(`https://mobileimsbackend.onrender.com/protected/user`,{
+                      fetch(`http://172.236.2.18:5000/users/protected/user`,{
                         method: 'GET',
                         headers: {
                           'Authorization': `Bearer ${data.access_token}`,
@@ -84,6 +88,7 @@ function SignIn() {
                       .then(response => response.json())
                       .then(data => {                      
                         if (data) {
+                          console.log(data.name)
                           setUser(data) 
                           setData(data.scanned_assets)                         
                         }                              
@@ -129,7 +134,7 @@ function SignIn() {
             setIsLoading(false),
             Alert.alert(
                 "Error !",
-                "Invalid email address!",
+                "Invalid email or password!",
                 [
                   {
                     text: "OK",
