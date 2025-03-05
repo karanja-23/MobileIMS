@@ -14,8 +14,10 @@ function WelcomeScreen({ navigation }) {
     async function checkToken() {
       try {
         const token = await SecureStore.getItemAsync("access_token");
+        
         if (token) {
-          setToken(token);         
+          setToken(token);   
+            
           fetch(`http://172.236.2.18:5000/users/protected/user`, {
             method: "GET",
             headers: {
@@ -32,15 +34,16 @@ function WelcomeScreen({ navigation }) {
                 }                
               }
              
+            if (data['msg'] ==="Token has expired" ){
+              navigation.navigate("SignIn")
+              
+            }
+            else{
               setUser(data);
-
-              console.log(user);
-              setData(data.scanned_assets);     
-
-            })
-           
-            .then(() => {
-              navigation.navigate("Home");
+              setData(data.scanned);  
+              navigate.navigate("Home")
+            }
+             
             })
 
             .catch((error) => {

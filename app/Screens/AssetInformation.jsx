@@ -29,14 +29,18 @@ import {
 
     const [showAlert, setShowAlert] = useState(false);
     useEffect(() => {
+      
       setLaoding(true)
       fetch(`http://172.236.2.18:5050/assets/filter?serial_no=${route.params.data}`,{
         method: 'GET'
       })
       .then(response => response.json())
       .then(data => {
-               
+        console.log(data[0].status)      
         if (data.length > 0) {
+          if (data[0].status === 'assigned' || data[0].status === 'borrowed') {
+            setShowAlert(true)
+          }
           
           setLaoding(false)
           setAssetData(data[0])
@@ -53,8 +57,8 @@ import {
     useEffect(() => {
       if (showAlert) {
         Alert.alert(
-          "Error",
-          "Asset not found!",
+          "Asset is not available!",
+          "Please try another asset",
           [
             {
               text: "OK",
@@ -68,7 +72,7 @@ import {
     }, [showAlert]);
     
     const handleBorrow = useCallback(()=>{
-      
+
       setItemLoading(true)
       if (assetData) {
         const data = {
@@ -77,7 +81,7 @@ import {
          
         }
         
-        fetch('https://mobileimsbackend.onrender.com/scanned', {
+        fetch('http://172.236.2.18:6010/scanned', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -85,20 +89,20 @@ import {
           body: JSON.stringify(data)
         })
         .then(response => response.json())
-        .then(data => {
+        .then(async(data) => {
           
           if ( data.message === 'Scanned entry created successfully') {
-            updateData()
+            updateData()                    
             setItemLoading(false)
             setSuccess(true)  
             setTimeout(() => {
               setSuccess(false)
               navigate.navigate("Home")
-            }, 100);
+            }, 400);
 
 
           async function updateData(){
-            fetch(`https://mobileimsbackend.onrender.com/protected/user`, {
+            fetch(`http://172.236.2.18:5000/users/protected/user`, {
               method: "GET",
               headers: {
                 Authorization: `Bearer ${Token}`,
@@ -107,10 +111,25 @@ import {
             })
             .then((response) => response.json())
             .then(data => {
-              setData(data.scanned_assets);  
-                            
-              
+              setData(data.scanned); 
+              fetch('http://172.236.2.18:6010/requests', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  asset_id: assetData.id,
+                  user_id: user.id,
+                  user_name: user.name,
+                  asset_name: assetData.item
+                })
+              })
+              .then(response => response.json())
+              .then(data => {
+                console.log(data)
+              })
             })   
+               
             await Notifications.scheduleNotificationAsync({
               content: {
                 title: "Moringa IMS",

@@ -35,7 +35,8 @@ function Profile({navigation}){
     })
     .then(response => response.json())    
     .then(data => {
-        console.log('data',data)
+        
+        setUser(data)
         if (data.email) {
             Alert.alert(
                 "Success !",
@@ -71,8 +72,7 @@ function Profile({navigation}){
         
     })
    }
-   useEffect(() => {
-    
+   useEffect(() => {    
     setProfileName(user?.name)
    },[user])
     return(

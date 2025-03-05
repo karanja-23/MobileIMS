@@ -90,7 +90,7 @@ function SignIn() {
                         if (data) {
                           console.log(data.name)
                           setUser(data) 
-                          setData(data.scanned_assets)                         
+                          setData(data.scanned)                         
                         }                              
                       })
       
