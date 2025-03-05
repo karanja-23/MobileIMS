@@ -8,7 +8,7 @@ import { Alert } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 function Profile({navigation}){
     const userRef = useRef(null);
-    const {Token,setToken,setData} = useContext(UserContext)
+    const {Token,setToken,setData, setExpoToken} = useContext(UserContext)
    const {setUser,user} = useContext(UserContext)
    const [name, setName] = useState(user?.name)
    const [email, setEmail] = useState(user?.email)
@@ -138,10 +138,13 @@ function Profile({navigation}){
                   color={colors.orange}
                   onPress={() => {
                     async function logout() {
+                      await Notifications.getExpoPushTokenAsync(null);
                       await SecureStore.deleteItemAsync('access_token');
+                      await SecureStore.deleteItemAsync('expo_token');
                       setUser(null);
                       setToken(null);
                       setData(null);
+                      setExpoToken(null);
                     }
                     logout()
                     navigation.navigate('SignIn')

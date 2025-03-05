@@ -26,43 +26,67 @@ import {
     const [fetchedData, setFetchedData] = useState(false)
     const [loading,setLaoding] = useState(false)
     const [itemLoading, setItemLoading] = useState(false)
-
+    const [showNotFound, setShowNotFound] = useState(false)
     const [showAlert, setShowAlert] = useState(false);
     useEffect(() => {
-      
+    
       setLaoding(true)
       fetch(`http://172.236.2.18:5050/assets/filter?serial_no=${route.params.data}`,{
         method: 'GET'
       })
       .then(response => response.json())
       .then(data => {
-        console.log(data[0].status)      
-        if (data.length > 0) {
-          if (data[0].status === 'assigned' || data[0].status === 'borrowed') {
+        console.log(data)
+        if (data.length === 0) {
+          setLaoding(false)
+          setShowNotFound(true)
+        }else{
+          if (data[0].status === 'assigned' || data.status === 'borrowed') {
             setShowAlert(true)
           }
-          
-          setLaoding(false)
-          setAssetData(data[0])
-          setFetchedData(true)  
-                 
+          else{
+            setLaoding(false)
+            setAssetData(data[0])
+            setFetchedData(true)
+          }
         }
-        else{
-          setLaoding(false)
-          setShowAlert(true)
-        }
+        
       })
     },[])
+    useEffect(() => {
+      if (showNotFound) {
+        Alert.alert(
+          "Not found!",
+          "This asset is not in our database\nPlease contact the administrator",
+          [
+            {
+              text: "OK",
+              onPress: () => {
+                setAssetData(false)
+                navigate.navigate("Scan")
+                                
+              },
+            },
+          ],
+          { cancelable: false }
+        );
+        setShowAlert(false);
+      }
+    }, [showNotFound]); 
 
     useEffect(() => {
       if (showAlert) {
         Alert.alert(
           "Asset is not available!",
-          "Please try another asset",
+          "This asset has been assigned or borrowed\nPlease contact the administrator",
           [
             {
               text: "OK",
-              onPress: () => navigate.navigate("Scan"),
+              onPress: () => {
+                setAssetData(false)
+                navigate.navigate("Scan")
+                                
+              },
             },
           ],
           { cancelable: false }

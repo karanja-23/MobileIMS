@@ -17,8 +17,11 @@ Notifications.setNotificationHandler({
     shouldSetBadge: false,
   }),
 });
+
 export default function App() {
   const Stack = createStackNavigator();
+
+
   return (
     <NavigationContainer>
       <Stack.Navigator>
