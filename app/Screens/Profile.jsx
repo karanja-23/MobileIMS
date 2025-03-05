@@ -10,66 +10,70 @@ function Profile({navigation}){
     const userRef = useRef(null);
     const {Token,setToken,setData} = useContext(UserContext)
    const {setUser,user} = useContext(UserContext)
-   const [name, setName] = useState(user?.username)
+   const [name, setName] = useState(user?.name)
    const [email, setEmail] = useState(user?.email)
    const [contact, setContact] = useState(user?.phone_number)
    const [password, setPassword] = useState(user?.password)
-   const [profileName, setProfileName] = useState(user?.username)
+   const [profileName, setProfileName] = useState(user?.name)
    async function handleEdit(){
+    
     const userData = {
-        username: name,
+        name: name,
         email: email,
         phone_number: contact,
         password: password
       };
-      
-     await fetch(`https://mobileimsbackend.onrender.com/edituser/${email}`,{
-        method: 'PATCH',
+           
+     await fetch(`http://172.236.2.18:5000/users/${user.id}`,{
+        method: 'PUT',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${Token}`
+
         },
         body: JSON.stringify(userData)
     })
-    .then(response => response.json())
+    .then(response => response.json())    
     .then(data => {
-        if (data.message === "Email address not found") {
+        
+        setUser(data)
+        if (data.email) {
             Alert.alert(
-                "Error!",
-                "Email address not found",
+                "Success !",
+                "Profile updated successfully",
                 [
-                    {
-                        text: "OK",
-                        onPress: () => navigation.navigate("Profile")
-                    }
-                ]
-            )
+                  {
+                    text: "OK",
+                    onPress: () => {
+                        navigation.navigate("Profile")
+                    },
+                  },
+                ],
+                { cancelable: false }
+              );
         }
-        else if (data.message === 'User updated successfully') { 
-            
-            Alert.alert("Profile edited successfully")
-            setTimeout(() => {
-                
-                fetch(`https://mobileimsbackend.onrender.com/protected/user`,{
-                    method: 'GET',
-                    headers: {
-                      'Authorization': `Bearer ${Token}`,
-                      'Content-Type': 'application/json'
-                    }
-                  })
-                .then(response => response.json())
-                .then(data => {
-                    setUser(data)
-                                       
-                })
-            },1000)
-            
+        else{
+            Alert.alert(
+                "Error !",
+                "Something went wrong\nPlease contact administaror",
+                [
+                  {
+                    text: "OK",
+                    onPress: () => {
+                        navigation.navigate("Profile")
+                    },
+                  },
+                ],
+                { cancelable: false }
+              );
         }
+            
+        
         
     })
    }
-   useEffect(() => {
-    
-    setProfileName(user?.username)
+   useEffect(() => {    
+    setProfileName(user?.name)
    },[user])
     return(
         <View style={styles.container}>

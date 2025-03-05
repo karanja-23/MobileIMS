@@ -14,17 +14,40 @@
     },
     "ios": {
       "supportsTablet": true,
-      "UIBackgroundModes": ["processing", "remote-notifications"]
+      "UIBackgroundModes": [
+        "processing",
+        "remote-notifications",
+        "processing",
+        "remote-notifications"
+      ],
+      "bundleIdentifier": "com.hosea23.MobileIMS",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./app/assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "permissions": ["RECEIVE_BOOT_COMPLETED","VIBRATE"]
+      "splash": {
+        "image": "./app/assets/splash-icon.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#ffffff"
+      },
+      "permissions": [
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE"
+      ],
+      "package": "com.hosea23.MobileIMS"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "da0b87db-7ac1-43cd-83f4-3080f261ae90"
+      }
     }
   }
 }

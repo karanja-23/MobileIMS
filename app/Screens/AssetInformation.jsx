@@ -16,25 +16,31 @@ import {
   import { useEffect, useState,useContext, useCallback } from "react";
   import { useNavigation } from "@react-navigation/native";
   import Loading from "../Components/Loading";
+  import Icon from 'react-native-vector-icons/MaterialIcons';
   
   function AssetInformation({route}) {
-    const {user,setData} = useContext(UserContext)
-    const navigate = useNavigation()
-    
+    const {user,setData,Token} = useContext(UserContext)
+    const navigate = useNavigation()    
+    const [suceess, setSuccess] = useState(false)
     const [assetData, setAssetData] = useState(false)
     const [fetchedData, setFetchedData] = useState(false)
     const [loading,setLaoding] = useState(false)
-    
+    const [itemLoading, setItemLoading] = useState(false)
+
     const [showAlert, setShowAlert] = useState(false);
     useEffect(() => {
+      
       setLaoding(true)
       fetch(`http://172.236.2.18:5050/assets/filter?serial_no=${route.params.data}`,{
         method: 'GET'
       })
       .then(response => response.json())
       .then(data => {
-               
+        console.log(data[0].status)      
         if (data.length > 0) {
+          if (data[0].status === 'assigned' || data[0].status === 'borrowed') {
+            setShowAlert(true)
+          }
           
           setLaoding(false)
           setAssetData(data[0])
@@ -51,8 +57,8 @@ import {
     useEffect(() => {
       if (showAlert) {
         Alert.alert(
-          "Error",
-          "Asset not found!",
+          "Asset is not available!",
+          "Please try another asset",
           [
             {
               text: "OK",
@@ -66,8 +72,8 @@ import {
     }, [showAlert]);
     
     const handleBorrow = useCallback(()=>{
-      
-      
+
+      setItemLoading(true)
       if (assetData) {
         const data = {
           name: assetData.item,
@@ -75,7 +81,7 @@ import {
          
         }
         
-        fetch('https://mobileimsbackend.onrender.com/scanned', {
+        fetch('http://172.236.2.18:6010/scanned', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -83,34 +89,47 @@ import {
           body: JSON.stringify(data)
         })
         .then(response => response.json())
-        .then(data => {
+        .then(async(data) => {
           
           if ( data.message === 'Scanned entry created successfully') {
-            updateData()
-            Alert.alert(
-              "Success",
-              `A request to borrow ${assetData.item} been sent to the admin for approval`,
-              [
-                {
-                  text: "OK",
-                  onPress: () => {
-                    navigate.navigate("Home")
-                  },
-                },
-              ],
-              { cancelable: false }
-            );
+            updateData()                    
+            setItemLoading(false)
+            setSuccess(true)  
+            setTimeout(() => {
+              setSuccess(false)
+              navigate.navigate("Home")
+            }, 400);
 
 
           async function updateData(){
-            fetch('https://mobileimsbackend.onrender.com/scanned',{
-              method: 'GET',
+            fetch(`http://172.236.2.18:5000/users/protected/user`, {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${Token}`,
+                "Content-Type": "application/json",
+              },
             })
-            .then(response => response.json())
+            .then((response) => response.json())
             .then(data => {
-              setData(data);   
-              
+              setData(data.scanned); 
+              fetch('http://172.236.2.18:6010/requests', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  asset_id: assetData.id,
+                  user_id: user.id,
+                  user_name: user.name,
+                  asset_name: assetData.item
+                })
+              })
+              .then(response => response.json())
+              .then(data => {
+                console.log(data)
+              })
             })   
+               
             await Notifications.scheduleNotificationAsync({
               content: {
                 title: "Moringa IMS",
@@ -147,6 +166,9 @@ import {
 
     return (
       <View style={styles.container}>
+        {suceess ? <View style={styles.success}>
+          <Icon name="check" size={50} color={colors.white} style={{alignSelf: 'center'}} />
+        </View> : null}
         
          { loading ? <View style={styles.alert}>
             <Loading />
@@ -234,7 +256,7 @@ import {
         </View> 
         <View style={{width: "80%", alignSelf: "center",backgroundColor:colors.blue}} >
         <Button
-          title="Borrow Asset"
+          title= {itemLoading ? "Loading..." : "Borrow item"}
           color={colors.orange}        
           disabled={loading}    
           onPress={handleBorrow}   
@@ -286,6 +308,20 @@ import {
       zIndex: 3,
       
       
+    },
+    success:{
+      position: "absolute",
+      top: height.height*0.47,
+      left: width.width*0.43,
+      width: width*0.5,
+      height: 3/4 *(width*0.5),
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: colors.orange,
+      padding: 10,
+      opacity: 0.9,
+      borderRadius: "50%",
+      zIndex: 3,
     }
   });
   export default AssetInformation;

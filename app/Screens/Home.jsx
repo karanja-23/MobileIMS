@@ -4,10 +4,12 @@ import Header from "../Components/Header"
 import colors from "../config/colors"
 import Table from "../Components/Table";
 import { useNavigation } from "@react-navigation/native";
+
 function Home (){
     const navigation = useNavigation()
     const width = Dimensions.get('window').width
     const height = Dimensions.get('window').height
+
     return(
         <View style={styles.container}>
             <Header />

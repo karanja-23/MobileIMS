@@ -8,13 +8,14 @@ import { ActivityIndicator } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { useNavigation } from '@react-navigation/native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import * as Notifications from 'expo-notifications';
 
 function SignIn() {
     const [isLoading, setIsLoading] = useState(false)
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [emailError, setEmailError] = useState(false)
-    const {user,setUser} = useContext(UserContext)
+    const {user,setUser,setExpoToken} = useContext(UserContext)
     const [passwordError, setPasswordError] = useState(false)
     const {Token, setToken, data, setData} = useContext(UserContext)
     const navigate = useNavigation()
@@ -40,26 +41,44 @@ function SignIn() {
             return
         }
         
-        fetch(`https://mobileimsbackend.onrender.com/user?email=${email}&password=${password}`,{
-            method: 'GET'
+        fetch('http://172.236.2.18:5000/auth/login',{
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },  
+            body: JSON.stringify({
+                email: email,
+                password: password
+            })
         })
         .then(response => response.json())
         .then(data => {
             
-            if (data.message ==="Invalid email") {
+            if (data.error) {
                 setIsLoading(false)
                 setEmailError(true)
             }
-            if (data.message === 'Invalid password') {
-                setIsLoading(false)
-                setPasswordError(true)
-            }
+
             else {
                 if (data.access_token) {
+                    
                     SecureStore.setItemAsync('access_token', data.access_token)
                     setToken(data.access_token)
+                    const getExpoToken = async () => {
+                      const token = await Notifications.getExpoPushTokenAsync();
+                      if (token) {
+                        SecureStore.setItemAsync('expo_token', token)
+                        setExpoToken(token)
+                        console.log(
+                          'Expo token:')
+                    }
+                    else{
+                      console.log('no token')
+                    }
+                    }
+                    getExpoToken()
                     async function updateUser() {
-                      fetch(`https://mobileimsbackend.onrender.com/protected/user`,{
+                      fetch(`http://172.236.2.18:5000/users/protected/user`,{
                         method: 'GET',
                         headers: {
                           'Authorization': `Bearer ${data.access_token}`,
@@ -69,8 +88,9 @@ function SignIn() {
                       .then(response => response.json())
                       .then(data => {                      
                         if (data) {
+                          console.log(data.name)
                           setUser(data) 
-                          setData(data.scanned_assets)                         
+                          setData(data.scanned)                         
                         }                              
                       })
       
@@ -114,7 +134,7 @@ function SignIn() {
             setIsLoading(false),
             Alert.alert(
                 "Error !",
-                "Invalid email address!",
+                "Invalid email or password!",
                 [
                   {
                     text: "OK",

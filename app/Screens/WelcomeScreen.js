@@ -8,15 +8,17 @@ import { ActivityIndicator } from 'react-native'
 import { Colors } from "react-native/Libraries/NewAppScreen";
 import colors from "../config/colors";
 function WelcomeScreen({ navigation }) {
-  const { setUser, user, setToken, setData } = useContext(UserContext);
+  const { setUser, user, setToken, setData , setExpoToken} = useContext(UserContext);
   const navigate = useNavigation();
   useEffect(() => {
     async function checkToken() {
       try {
         const token = await SecureStore.getItemAsync("access_token");
+        
         if (token) {
-          setToken(token);         
-          fetch(`https://mobileimsbackend.onrender.com/protected/user`, {
+          setToken(token);   
+            
+          fetch(`http://172.236.2.18:5000/users/protected/user`, {
             method: "GET",
             headers: {
               Authorization: `Bearer ${token}`,
@@ -25,16 +27,23 @@ function WelcomeScreen({ navigation }) {
           })
             .then((response) => response.json())
             .then((data) => {
+              async function getExpoToken() {
+                const token = await SecureStore.getItemAsync('expo_token');
+                if (token) {
+                  setExpoToken(token)
+                }                
+              }
+             
+            if (data['msg'] ==="Token has expired" ){
+              navigation.navigate("SignIn")
               
+            }
+            else{
               setUser(data);
-
-              console.log(user);
-              setData(data.scanned_assets);     
-
-            })
-           
-            .then(() => {
-              navigation.navigate("Home");
+              setData(data.scanned);  
+              navigate.navigate("Home")
+            }
+             
             })
 
             .catch((error) => {
@@ -69,7 +78,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: colors.blue,
     gap:0,
-    opacity:0.9
+    opacity:0.99
 
   },
   logo: {
