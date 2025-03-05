@@ -15,7 +15,7 @@ function SignIn() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [emailError, setEmailError] = useState(false)
-    const {user,setUser,setExpoToken} = useContext(UserContext)
+    const {user,setUser,setExpoToken,expoToken} = useContext(UserContext)
     const [passwordError, setPasswordError] = useState(false)
     const {Token, setToken, data, setData} = useContext(UserContext)
     const navigate = useNavigation()
@@ -67,10 +67,9 @@ function SignIn() {
                     const getExpoToken = async () => {
                       const token = await Notifications.getExpoPushTokenAsync();
                       if (token) {
-                        SecureStore.setItemAsync('expo_token', token)
-                        setExpoToken(token)
-                        console.log(
-                          'Expo token:')
+                        SecureStore.setItemAsync('expo_token', token.data)
+                        setExpoToken(token.data)
+                        console.log(token.data)
                     }
                     else{
                       console.log('no token')

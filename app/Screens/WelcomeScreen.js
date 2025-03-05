@@ -7,14 +7,24 @@ import { useNavigation } from "@react-navigation/native";
 import { ActivityIndicator } from 'react-native'
 import { Colors } from "react-native/Libraries/NewAppScreen";
 import colors from "../config/colors";
+import * as Notifications from 'expo-notifications';
+
 function WelcomeScreen({ navigation }) {
   const { setUser, user, setToken, setData , setExpoToken} = useContext(UserContext);
+  
   const navigate = useNavigation();
   useEffect(() => {
     async function checkToken() {
       try {
         const token = await SecureStore.getItemAsync("access_token");
-        
+        const getExpoTokenFromStorage = async () => {
+          const expoToken = await SecureStore.getItemAsync('expo_token');
+          if (expoToken) {
+            setExpoToken(expoToken);
+            console.log(expoToken);
+          }
+        }
+        getExpoTokenFromStorage();
         if (token) {
           setToken(token);   
             
@@ -27,13 +37,7 @@ function WelcomeScreen({ navigation }) {
           })
             .then((response) => response.json())
             .then((data) => {
-              async function getExpoToken() {
-                const token = await SecureStore.getItemAsync('expo_token');
-                if (token) {
-                  setExpoToken(token)
-                }                
-              }
-             
+                         
             if (data['msg'] ==="Token has expired" ){
               navigation.navigate("SignIn")
               
