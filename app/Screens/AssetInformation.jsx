@@ -10,50 +10,83 @@ import {
     Alert
   } from "react-native";
   import Header from "../Components/Header";
+  import * as Notifications from "expo-notifications";
   import colors from "../config/colors";
   import { UserContext } from "../Contexts/userContext";
-  import { useEffect, useState,useContext, use } from "react";
+  import { useEffect, useState,useContext, useCallback } from "react";
   import { useNavigation } from "@react-navigation/native";
   import Loading from "../Components/Loading";
+  import Icon from 'react-native-vector-icons/MaterialIcons';
   
   function AssetInformation({route}) {
-    const {user} = useContext(UserContext)
-    const navigate = useNavigation()
-    const {data} = route.params 
+    const {user,setData,Token} = useContext(UserContext)
+    const navigate = useNavigation()    
+    const [suceess, setSuccess] = useState(false)
     const [assetData, setAssetData] = useState(false)
     const [fetchedData, setFetchedData] = useState(false)
     const [loading,setLaoding] = useState(false)
-    
+    const [itemLoading, setItemLoading] = useState(false)
+    const [showNotFound, setShowNotFound] = useState(false)
     const [showAlert, setShowAlert] = useState(false);
     useEffect(() => {
+    
       setLaoding(true)
-      fetch(`https://mobileimsbackend.onrender.com/asset/${data}`,{
+      fetch(`http://172.236.2.18:5050/assets/filter?serial_no=${route.params.data}`,{
         method: 'GET'
       })
       .then(response => response.json())
       .then(data => {
         
-        if (data.message === "Asset not found") {
+        if (data.length === 0) {
           setLaoding(false)
-          setShowAlert(true)
+          setShowNotFound(true)
+        }else{
+          if (data[0].status === 'assigned' || data.status === 'borrowed') {
+            setShowAlert(true)
+          }
+          else{
+            setLaoding(false)
+            setAssetData(data[0])
+            setFetchedData(true)
+          }
         }
-        else if (data && Object.keys(data).length > 0) {
-          setLaoding(false)
-          setAssetData(data)
-          setFetchedData(true)          
-        }
+        
       })
     },[])
+    useEffect(() => {
+      if (showNotFound) {
+        Alert.alert(
+          "Not found!",
+          "This asset is not in our database\nPlease contact the administrator",
+          [
+            {
+              text: "OK",
+              onPress: () => {
+                setAssetData(false)
+                navigate.navigate("Scan")
+                                
+              },
+            },
+          ],
+          { cancelable: false }
+        );
+        setShowAlert(false);
+      }
+    }, [showNotFound]); 
 
     useEffect(() => {
       if (showAlert) {
         Alert.alert(
-          "Error",
-          "Asset not found!",
+          "Asset is not available!",
+          "This asset has been assigned or borrowed\nPlease contact the administrator",
           [
             {
               text: "OK",
-              onPress: () => navigate.navigate("Scan"),
+              onPress: () => {
+                setAssetData(false)
+                navigate.navigate("Scan")
+                                
+              },
             },
           ],
           { cancelable: false }
@@ -62,40 +95,68 @@ import {
       }
     }, [showAlert]);
     
-    function handleBorrow(){
-      const asset = assetData.asset
-      if (asset.status === "Available") {
-        const data = {
-          asset_id: asset.asset_id,
-          id: user.id
+    const handleBorrow = useCallback(()=>{
+      
+      setItemLoading(true)
+
+      if (assetData) {
+        const new_request = {
+          asset_id: assetData.serial_no,
+          user_id: user.id,
+          user_name: user.name,
+          asset_name: assetData.item,        
         }
-        console.log(data)
-        fetch('https://mobileimsbackend.onrender.com/scanned', {
+        
+        fetch(`http://172.236.2.18:6010/requests`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(data)
+          body: JSON.stringify(new_request)
         })
-        .then(response => response.json())
+        .then(response => {
+        
+          return response.json()
+        })
+        .catch(error => {
+          
+        })
         .then(data => {
-          console.log("hi")
-          if ( data.message === 'Scanned entry created successfully') {
-            console.log(data)
-            Alert.alert(
-              "Success",
-              `A request has to borrow ${asset.name} been sent to the admin for approval`,
-              [
-                {
-                  text: "OK",
-                  onPress: () => {
-                    navigate.navigate("Home")
+          
+          if (data.message === "Request created successfully"){
+            fetch(`http://172.236.2.18:5000/users/protected/user`, {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${Token}`,
+                "Content-Type": "application/json",
+              },
+            })
+            .then((response) => response.json())
+            .then(data => {
+              
+              setData(data.requests)
+            })
+            .then(() => {
+              setItemLoading(false)
+              setSuccess(true)
+              setTimeout(() => {
+                setSuccess(false)
+                navigate.navigate("Home")
+                sendNotification()
+              }, 400);
+              async function sendNotification(){
+                await Notifications.scheduleNotificationAsync({
+                  content: {
+                    title: "Moringa IMS",
+                    body: `A request to borrow ${assetData.item} been sent to the admin for approval`,
                   },
-                },
-              ],
-              { cancelable: false }
-            );
-          }
+                  trigger: null,
+                  sound: true,
+                  vibrate: true,
+                })           
+              }
+            })
+          }  
         })
       }
       else {
@@ -116,10 +177,13 @@ import {
       }
 
 
-    }
+    },[assetData])
 
     return (
       <View style={styles.container}>
+        {suceess ? <View style={styles.success}>
+          <Icon name="check" size={50} color={colors.white} style={{alignSelf: 'center'}} />
+        </View> : null}
         
          { loading ? <View style={styles.alert}>
             <Loading />
@@ -141,9 +205,9 @@ import {
         </Text>
         <View style={{flexDirection: "row", justifyContent: "space-evenly", marginTop: 20, opacity: loading ? 0.4 : 1}}>
           <View>
-            <Text style={styles.titles}>Asset Id</Text>
+            <Text style={styles.titles}>Serial Number</Text>
             <TextInput
-             value={fetchedData ? assetData?.asset?.asset_id : ''}
+             value={fetchedData ? assetData?.serial_no: ''}
               placeholder="Asset Name"
               style={styles.input}
             ></TextInput>
@@ -151,16 +215,16 @@ import {
           <View>
             <Text style={[styles.titles,{opacity: loading ? 0.4 : 1}]}>Asset Name</Text>
             <TextInput
-              value={fetchedData ? assetData?.asset?.name : ''}
+              value={fetchedData ? assetData?.item : ''}
               placeholder="Asset Name"
-              style={[styles.input,{opacity: loading ? 0.4 : 1}]}
+              style={styles.input}
             ></TextInput>
           </View>
         </View>
         <View style={{marginTop: 20, opacity: loading ? 0.4 : 1}}>
            <Text style={{fontSize:13, marginBottom: 5 ,fontWeight:19,fontWeight: "900", color: colors.grey,marginLeft: "10%"}}>Asset description</Text>
            <TextInput 
-           value={fetchedData ? assetData?.asset?.description : ''}            
+           value={fetchedData ? assetData?.specifications : ''}            
            multiline={true}
            numberOfLines={6}
            style={{width:"80%", backgroundColor: "lightgrey" ,textAlignVertical: "top" ,alignSelf: "center",height: 130}}>
@@ -170,9 +234,9 @@ import {
         
         <View style={{flexDirection: "row", justifyContent: "space-evenly", marginTop: 20, opacity: loading ? 0.4 : 1}}>
           <View>
-            <Text style={styles.titles}>Asset condition</Text>
+            <Text style={styles.titles}>Condition</Text>
             <TextInput
-              value={fetchedData ? assetData?.asset?.condition : ''}
+              value={fetchedData ? assetData?.condition : ''}
               placeholder="Asset Name"
               style={styles.input}
             ></TextInput>
@@ -180,7 +244,7 @@ import {
           <View>
             <Text style={styles.titles}>Category</Text>
             <TextInput
-            value={fetchedData ? assetData?.asset?.category : ''}
+            value={fetchedData ? assetData?.class_code : ''}
               placeholder="Asset Name"
               style={styles.input}
             ></TextInput>
@@ -189,17 +253,17 @@ import {
 
         <View style={{flexDirection: "row", justifyContent: "space-evenly", marginTop: 20, marginBottom: 30, opacity: loading ? 0.4 : 1}}>
           <View>
-            <Text style={styles.titles}>Asset condition</Text>
+            <Text style={styles.titles}>Location</Text>
             <TextInput
-              value={fetchedData ? assetData?.asset?.space : ''}
+              value={fetchedData ? assetData?.location_name : ''}
               placeholder="Asset Space"
               style={styles.input}
             ></TextInput>
           </View>
           <View>
-            <Text style={styles.titles}>Status</Text>
+            <Text style={styles.titles}>Assigned to:</Text>
             <TextInput
-            value={fetchedData ? assetData?.asset?.status : ''}
+            value={fetchedData ? assetData?.assigned_to : ''}
               placeholder="Asset Name"
               style={styles.input}
             ></TextInput>
@@ -207,7 +271,7 @@ import {
         </View> 
         <View style={{width: "80%", alignSelf: "center",backgroundColor:colors.blue}} >
         <Button
-          title="Borrow Asset"
+          title= {itemLoading ? "Loading..." : "Borrow item"}
           color={colors.orange}        
           disabled={loading}    
           onPress={handleBorrow}   
@@ -259,6 +323,20 @@ import {
       zIndex: 3,
       
       
+    },
+    success:{
+      position: "absolute",
+      top: height.height*0.47,
+      left: width.width*0.43,
+      width: width*0.5,
+      height: 3/4 *(width*0.5),
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: colors.orange,
+      padding: 10,
+      opacity: 0.9,
+      borderRadius: "50%",
+      zIndex: 3,
     }
   });
   export default AssetInformation;

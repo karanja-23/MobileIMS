@@ -1,19 +1,34 @@
 import { useEffect } from "react";
-import { ImageBackground, StyleSheet, Image, View } from "react-native";
+import { ImageBackground, StyleSheet, Image, View, Text } from "react-native";
 import * as SecureStore from "expo-secure-store";
 import { UserContext } from "../Contexts/userContext";
 import { useContext } from "react";
 import { useNavigation } from "@react-navigation/native";
+import { ActivityIndicator } from 'react-native'
+import { Colors } from "react-native/Libraries/NewAppScreen";
+import colors from "../config/colors";
+import * as Notifications from 'expo-notifications';
+
 function WelcomeScreen({ navigation }) {
-  const { setUser, setToken, setData } = useContext(UserContext);
+  const { setUser, user, setToken, setData , setExpoToken} = useContext(UserContext);
+  
   const navigate = useNavigation();
   useEffect(() => {
     async function checkToken() {
       try {
         const token = await SecureStore.getItemAsync("access_token");
+        const getExpoTokenFromStorage = async () => {
+          const expoToken = await SecureStore.getItemAsync('expo_token');
+          if (expoToken) {
+            setExpoToken(expoToken);
+            console.log(expoToken);
+          }
+        }
+        getExpoTokenFromStorage();
         if (token) {
-          setToken(token);
-          fetch(`https://mobileimsbackend.onrender.com/protected/user`, {
+          setToken(token);   
+            
+          fetch(`http://172.236.2.18:5000/users/protected/user`, {
             method: "GET",
             headers: {
               Authorization: `Bearer ${token}`,
@@ -22,19 +37,17 @@ function WelcomeScreen({ navigation }) {
           })
             .then((response) => response.json())
             .then((data) => {
+                         
+            if (data['msg'] ==="Token has expired" ){
+              navigation.navigate("SignIn")
+              
+            }
+            else{
               setUser(data);
-              fetch("https://mobileimsbackend.onrender.com/assets", {
-                method: "GET",
-              })
-                .then((response) => response.json())
-                .then((data) => {
-                  if (data.assets) {
-                    setData(data.assets);
-                  }
-                })
-                .then(() => {
-                  navigate.navigate("Home")
-                });
+              setData(data.requests);  
+              navigate.navigate("Home")
+            }
+             
             })
 
             .catch((error) => {
@@ -51,8 +64,12 @@ function WelcomeScreen({ navigation }) {
     checkToken();
   }, [navigation]);
   return (
-    <ImageBackground style={styles.background}>
+    <ImageBackground style={styles.background } >
       <Image style={styles.logo} source={require("../assets/logo.png")} />
+      <View >
+        <ActivityIndicator size="large" color={colors.white} />
+      </View>
+
     </ImageBackground>
   );
 }
@@ -60,8 +77,13 @@ function WelcomeScreen({ navigation }) {
 const styles = StyleSheet.create({
   background: {
     flex: 1,
+    flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
+    backgroundColor: colors.white,
+    gap:0,
+    
+
   },
   logo: {
     width: "70%",

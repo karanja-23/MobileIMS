@@ -8,9 +8,20 @@ import Home from './app/Screens/Home';
 import Scan from './app/Screens/Scan';
 import AssetInformation from './app/Screens/AssetInformation';
 import Profile from './app/Screens/Profile';
+import * as Notifications from 'expo-notifications';
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
 
 export default function App() {
   const Stack = createStackNavigator();
+
+
   return (
     <NavigationContainer>
       <Stack.Navigator>

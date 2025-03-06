@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet,Platform,StatusBar, TextInput, Button } from "react-native";
+import { View, Text, StyleSheet,Platform,StatusBar, TextInput, Button, TouchableOpacity } from "react-native";
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import colors from "../config/colors";
 import { UserContext } from "../Contexts/userContext";
@@ -8,75 +8,79 @@ import { Alert } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 function Profile({navigation}){
     const userRef = useRef(null);
-    const {Token,setToken,setData} = useContext(UserContext)
+    const {Token,setToken,setData, setExpoToken} = useContext(UserContext)
    const {setUser,user} = useContext(UserContext)
-   const [name, setName] = useState(user?.username)
+   const [name, setName] = useState(user?.name)
    const [email, setEmail] = useState(user?.email)
    const [contact, setContact] = useState(user?.phone_number)
    const [password, setPassword] = useState(user?.password)
-   const [profileName, setProfileName] = useState(user?.username)
+   const [profileName, setProfileName] = useState(user?.name)
    async function handleEdit(){
+    
     const userData = {
-        username: name,
+        name: name,
         email: email,
         phone_number: contact,
         password: password
       };
-      
-     await fetch(`https://mobileimsbackend.onrender.com/edituser/${email}`,{
-        method: 'PATCH',
+           
+     await fetch(`http://172.236.2.18:5000/users/${user.id}`,{
+        method: 'PUT',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${Token}`
+
         },
         body: JSON.stringify(userData)
     })
-    .then(response => response.json())
+    .then(response => response.json())    
     .then(data => {
-        if (data.message === "Email address not found") {
+        
+        setUser(data)
+        if (data.email) {
             Alert.alert(
-                "Error!",
-                "Email address not found",
+                "Success !",
+                "Profile updated successfully",
                 [
-                    {
-                        text: "OK",
-                        onPress: () => navigation.navigate("Profile")
-                    }
-                ]
-            )
+                  {
+                    text: "OK",
+                    onPress: () => {
+                        navigation.navigate("Profile")
+                    },
+                  },
+                ],
+                { cancelable: false }
+              );
         }
-        else if (data.message === 'User updated successfully') { 
-            
-            Alert.alert("Profile edited successfully")
-            setTimeout(() => {
-                
-                fetch(`https://mobileimsbackend.onrender.com/protected/user`,{
-                    method: 'GET',
-                    headers: {
-                      'Authorization': `Bearer ${Token}`,
-                      'Content-Type': 'application/json'
-                    }
-                  })
-                .then(response => response.json())
-                .then(data => {
-                    setUser(data)
-                                       
-                })
-            },1000)
-            
+        else{
+            Alert.alert(
+                "Error !",
+                "Something went wrong\nPlease contact administaror",
+                [
+                  {
+                    text: "OK",
+                    onPress: () => {
+                        navigation.navigate("Profile")
+                    },
+                  },
+                ],
+                { cancelable: false }
+              );
         }
+            
+        
         
     })
    }
-   useEffect(() => {
-    
-    setProfileName(user?.username)
+   useEffect(() => {    
+    setProfileName(user?.name)
    },[user])
     return(
         <View style={styles.container}>
             <Icon onPress={()=>{navigation.goBack()}} style={styles.back} name="arrow-back" size={27} color={colors.white} />
             <View style={styles.profile}>           
               <Text style={{color: colors.white, fontSize: 20, fontWeight: '900', marginBottom: 10}} >My Profile</Text>
-              <Icon name="perm-identity" size={70} color={colors.white} />
+              <Icon name="account-circle" size={70} color={colors.white} />
               <Text style={{color: colors.white, fontSize: 14, fontWeight: '500'}} >{profileName}</Text>
             </View>
             <View style={{marginHorizontal: 15, marginTop: 20}}>
@@ -129,21 +133,33 @@ function Profile({navigation}){
                 >
                    
                 </Button>
-                <Button 
-                  title="Logout"
-                  color={colors.orange}
+                <TouchableOpacity 
+                  style={{
+                    flexDirection: "row",
+                    width:"50%",
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    gap: 2,
+                    alignSelf: 'center'
+                  }}
                   onPress={() => {
-                    async function logout() {
+                    async function logout() {                      
                       await SecureStore.deleteItemAsync('access_token');
+                                            
                       setUser(null);
                       setToken(null);
                       setData(null);
+                      setExpoToken(null);
+                      
+                      navigation.navigate('SignIn')
                     }
                     logout()
-                    navigation.navigate('SignIn')
+                    
                   }}
-                >
-                </Button>                
+                >                  
+                  <Icon name="logout" size={25} color={colors.orange} />
+                  <Text style={{color:colors.orange, fontWeight: 700, fontSize: 16}}>Logout</Text>
+                </TouchableOpacity>                
                 </View>
             </View>
         </View>
@@ -173,8 +189,8 @@ const styles = StyleSheet.create({
     },
     input:{
         borderBottomWidth: 1,
-        marginBottom: Platform.OS === 'ios' ? 35 : 0,
-        paddingBottom: Platform.OS === 'ios' ? 10 : 0,
+        marginBottom: Platform.OS === 'ios' ? 35 : 15,
+        paddingBottom: Platform.OS === 'ios' ? 10 : 3,
         borderBottomColor: colors.grey
     },
     label:{
